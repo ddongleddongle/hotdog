@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'Login.dart';
-import 'Shop.dart';
+import '/Shop/Shop.dart';
 import 'Start.dart';
 import 'Walking.dart';
+import 'LoginHW.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -22,7 +23,8 @@ class Home extends StatelessWidget {
             );
           },
         ),
-        title: Text("Home Page", style: TextStyle(color: Colors.black)), // 제목을 더 명확하게 설정
+        title: Text("Home Page",
+            style: TextStyle(color: Colors.black)), // 제목을 더 명확하게 설정
       ),
       body: Container(
         width: double.infinity,
@@ -38,7 +40,8 @@ class Home extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 1, // 이미지가 차지할 비율
-                    child: Image.asset('assets/pet.png', fit: BoxFit.contain), // 이미지 비율 유지
+                    child: Image.asset('assets/images/pet.png',
+                        fit: BoxFit.contain), // 이미지 비율 유지
                   ),
                   Expanded(
                     flex: 2, // 텍스트가 차지할 비율
@@ -80,7 +83,6 @@ class Home extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.only(top: 50),
                 margin: const EdgeInsets.symmetric(horizontal: 32.0),
-
                 child: GridView(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
@@ -91,34 +93,36 @@ class Home extends StatelessWidget {
                   children: [
                     buildContainer(
                       '산책 매칭',
-                          () {
+                      () {
                         // 첫 번째 버튼 클릭 시 실행할 코드
                         print('산책 매칭 버튼 클릭');
                       },
                     ),
                     buildContainer(
                       '임시 Login 페이지 망작',
-                          () {
+                      () {
                         // 두 번째 버튼 클릭 시 실행할 코드
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Login()), // Start 페이지로 이동
-                          );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => LoginHW()), // Start 페이지로 이동
+                        );
                       },
                     ),
                     buildContainer(
                       'Shop',
-                          () {
+                      () {
                         // 세 번째 버튼 클릭 시 실행할 코드
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Shop()), // Start 페이지로 이동
-                          );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Shop()), // Start 페이지로 이동
+                        );
                       },
                     ),
                     buildContainer(
                       '네 번째 매칭',
-                          () {
+                      () {
                         // 네 번째 버튼 클릭 시 실행할 코드
                         print('네 번째 매칭 버튼 클릭');
                       },
@@ -131,14 +135,13 @@ class Home extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.all(30),
                 margin: EdgeInsets.only(bottom: 100),
-                child: buildContainer(
-                    "산책하러가기", () {
+                child: buildContainer("산책하러가기", () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => Walking()), // Start 페이지로 이동
+                    MaterialPageRoute(
+                        builder: (context) => Walking()), // Start 페이지로 이동
                   );
-                }
-                ),
+                }),
               ),
             ),
           ],
