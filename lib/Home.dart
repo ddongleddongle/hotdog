@@ -29,6 +29,9 @@ class _HomeState extends State<Home> {
   // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
   String _formatBirthDate(String birthDate) {
     // String을 DateTime으로 변환
+    if (birthDate == '0000'){
+      return birthDate;
+    }
     DateTime date = DateTime.parse(birthDate);
 
     // 날짜 형식으로 포맷

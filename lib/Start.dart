@@ -12,7 +12,7 @@ class Start extends StatelessWidget {
         context,
         MaterialPageRoute(builder: (context) => Home(
           petName: '로그인을 해주세요.',
-          petBirthDay: ' ',
+          petBirthDay: '0000',
           coins: 0,
         )),
       );
