@@ -5,8 +5,8 @@ class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(
-        children: [Column(
+      body: ListView(children: [
+        Column(
           children: [
             Container(
               width: 390,
@@ -44,8 +44,10 @@ class Login extends StatelessWidget {
                                       height: 268.13,
                                       decoration: BoxDecoration(
                                         image: DecorationImage(
-                                          image: AssetImage('google.png'), // AssetImage를 사용하여 이미지 경로를 설정합니다.
-                                          fit: BoxFit.cover, // 원하는 fit 옵션을 설정합니다.
+                                          image: AssetImage(
+                                              'google.png'), // AssetImage를 사용하여 이미지 경로를 설정합니다.
+                                          fit: BoxFit
+                                              .cover, // 원하는 fit 옵션을 설정합니다.
                                         ),
                                       ),
                                     ),
@@ -58,7 +60,9 @@ class Login extends StatelessWidget {
                             left: 479.66,
                             top: 211.84,
                             child: Transform(
-                              transform: Matrix4.identity()..translate(0.0, 0.0)..rotateZ(-3.14),
+                              transform: Matrix4.identity()
+                                ..translate(0.0, 0.0)
+                                ..rotateZ(-3.14),
                               child: Container(
                                 width: 129.52,
                                 height: 179.46,
@@ -66,10 +70,14 @@ class Login extends StatelessWidget {
                                   gradient: LinearGradient(
                                     begin: Alignment(0.00, -1.00),
                                     end: Alignment(0, 1),
-                                    colors: [Color(0xFFEF7E06), Color(0x00C4C4C4)],
+                                    colors: [
+                                      Color(0xFFEF7E06),
+                                      Color(0x00C4C4C4)
+                                    ],
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    side: BorderSide(width: 3, color: Colors.white),
+                                    side: BorderSide(
+                                        width: 3, color: Colors.white),
                                     borderRadius: BorderRadius.circular(27),
                                   ),
                                 ),
@@ -178,7 +186,8 @@ class Login extends StatelessWidget {
                                       decoration: ShapeDecoration(
                                         color: Color(0xFF0C0C0C),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(36),
+                                          borderRadius:
+                                              BorderRadius.circular(36),
                                         ),
                                       ),
                                     ),
@@ -187,7 +196,9 @@ class Login extends StatelessWidget {
                                     left: 5,
                                     top: 15,
                                     child: Transform(
-                                      transform: Matrix4.identity()..translate(0.0, 0.0)..rotateZ(-0.27),
+                                      transform: Matrix4.identity()
+                                        ..translate(0.0, 0.0)
+                                        ..rotateZ(-0.27),
                                       child: Container(
                                         width: 38,
                                         height: 37.99,
@@ -207,9 +218,11 @@ class Login extends StatelessWidget {
                     left: 28,
                     top: 678,
                     child: GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(
-                          builder: (_) => Start(),
-                      )),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Start(),
+                          )),
                       child: Container(
                         width: 335,
                         height: 65,
@@ -219,7 +232,8 @@ class Login extends StatelessWidget {
                             borderRadius: BorderRadius.circular(98),
                           ),
                         ),
-                        child: Center( // Center 위젯을 사용하여 중앙 정렬
+                        child: Center(
+                          // Center 위젯을 사용하여 중앙 정렬
                           child: Text(
                             'Get Started',
                             textAlign: TextAlign.center,
@@ -249,83 +263,88 @@ class Login extends StatelessWidget {
                       ),
                     ),
                   ),
-                Positioned(
-                  left: 38,
-                  top: 230,
-                  child: Container(
-                    width: 310,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent, // 배경색을 투명으로 설정
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Container(
-                          width: 176,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Color(0xFFAAD5D1),
-                            borderRadius: BorderRadius.circular(8.0),
+                  Positioned(
+                    left: 38,
+                    top: 230,
+                    child: Container(
+                      width: 310,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.transparent, // 배경색을 투명으로 설정
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Container(
+                            width: 176,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFAAD5D1),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Row(
+                              // Row를 사용하여 아이템을 가로로 배치
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center, // 가로 중앙 정렬
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.center, // 세로 중앙 정렬
+                              children: [
+                                Image.asset(
+                                  'google.png',
+                                  height: 20,
+                                  width: 20,
+                                ),
+                                SizedBox(width: 5),
+                                Text(
+                                  'With Google',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontFamily: 'Mulish',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          child: Row( // Row를 사용하여 아이템을 가로로 배치
-                            mainAxisAlignment: MainAxisAlignment.center, // 가로 중앙 정렬
-                            crossAxisAlignment: CrossAxisAlignment.center, // 세로 중앙 정렬
-                            children: [
-                              Image.asset(
-                                'google.png',
-                                height: 20,
+                          SizedBox(width: 10), // 아이콘과의 간격
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Color(0xFFAAD5D1)),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Center(
+                              // Center로 아이콘 중앙 정렬
+                              child: Image.asset(
+                                'facebook.png',
+                                height: 20, // 아이콘 크기 조정
                                 width: 20,
                               ),
-                              SizedBox(width: 5),
-                              Text(
-                                'With Google',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontFamily: 'Mulish',
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            ),
+                          ),
+                          SizedBox(width: 10), // 아이콘과의 간격
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Color(0xFFAAD5D1)),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: Center(
+                              // Center로 아이콘 중앙 정렬
+                              child: Image.asset(
+                                'twitter.png',
+                                height: 20, // 아이콘 크기 조정
+                                width: 20,
                               ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 10), // 아이콘과의 간격
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFFAAD5D1)),
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          child: Center( // Center로 아이콘 중앙 정렬
-                            child: Image.asset(
-                              'facebook.png',
-                              height: 20, // 아이콘 크기 조정
-                              width: 20,
                             ),
                           ),
-                        ),
-                        SizedBox(width: 10), // 아이콘과의 간격
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFFAAD5D1)),
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          child: Center( // Center로 아이콘 중앙 정렬
-                            child: Image.asset(
-                              'twitter.png',
-                              height: 20, // 아이콘 크기 조정
-                              width: 20,
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
                   Positioned(
                     left: 133,
                     top: 328,
@@ -353,7 +372,7 @@ class Login extends StatelessWidget {
                           width: 1.0, // 테두리 두께
                         ),
                         borderRadius: BorderRadius.circular(8.0),
-                        ),
+                      ),
                       child: Stack(
                         children: [
                           Positioned(
@@ -373,9 +392,7 @@ class Login extends StatelessWidget {
                           Positioned(
                             left: 322,
                             top: 23,
-                            child: Image.asset(
-                                'check.png'
-                            ),
+                            child: Image.asset('check.png'),
                           ),
                         ],
                       ),
@@ -392,7 +409,8 @@ class Login extends StatelessWidget {
                           color: Color(0xFFB3E0DB), // 테두리 색상
                           width: 1.0, // 테두리 두께
                         ),
-                        borderRadius: BorderRadius.circular(8.0), // 테두리 모서리 둥글기 (선택 사항)
+                        borderRadius:
+                            BorderRadius.circular(8.0), // 테두리 모서리 둥글기 (선택 사항)
                       ),
                       child: Stack(
                         children: [
@@ -413,7 +431,6 @@ class Login extends StatelessWidget {
                         ],
                       ),
                     ),
-        
                   ),
                   Positioned(
                     left: 127,
@@ -450,8 +467,7 @@ class Login extends StatelessWidget {
             ),
           ],
         ),
-      ]
-      ),
+      ]),
     );
   }
 }

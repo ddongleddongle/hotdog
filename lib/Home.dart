@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'Login.dart';
-import 'Shop.dart';
+import '/Shop/Shop.dart';
 import 'Start.dart';
 import 'Walking.dart';
+import 'LoginHW.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -31,7 +32,8 @@ class Home extends StatelessWidget {
       leading: IconButton(
         icon: Icon(Icons.settings, color: Colors.black54),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => Start()));
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Start()));
         },
       ),
       title: Text("Hot Dog", style: TextStyle(color: Colors.black)),
@@ -47,7 +49,7 @@ class Home extends StatelessWidget {
         children: [
           Expanded(
             flex: 1,
-            child: Image.asset('assets/pet.png', fit: BoxFit.contain),
+            child: Image.asset('assets/images/pet.png', fit: BoxFit.contain),
           ),
           Expanded(
             flex: 2,
@@ -93,10 +95,12 @@ class Home extends StatelessWidget {
         children: [
           _buildButton('산책 매칭', () => print('산책 매칭 버튼 클릭')),
           _buildButton('임시 Login 페이지 망작', () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => LoginHW()));
           }),
           _buildButton('Shop', () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Shop()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Shop()));
           }),
           _buildButton('네 번째 매칭', () => print('네 번째 매칭 버튼 클릭')),
         ],
@@ -112,7 +116,8 @@ class Home extends StatelessWidget {
         height: 100,
         width: double.infinity,
         child: _buildButton('산책하러가기', () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => Walking()));
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => Walking()));
         }),
       ),
     );
@@ -183,11 +188,13 @@ class Home extends StatelessWidget {
             break;
           case 1:
             print('쇼핑 선택됨');
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Shop()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
             print('산책 선택됨');
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Walking()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Walking()));
             break;
           case 3:
             print('내정보 선택됨');

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'DBconnector.dart';
 import 'Start.dart';
 
 void main() async {
@@ -14,8 +13,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Start()
-    );
+    return MaterialApp(home: Start());
   }
 }
