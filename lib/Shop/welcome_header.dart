@@ -11,11 +11,10 @@ class WelcomeHeader extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              'https://cdn.builder.io/api/v1/image/assets/TEMP/55d0a08f7c6fb87e79bfa7f421251de2401b0da47c0ca8d600aa8ca25d504308?placeholderIfAbsent=true&apiKey=5a2bd66ac2224367918a8ced0d986eb2',
-              width: 36,
-              height: 36,
-              fit: BoxFit.contain,
+            Icon(
+              Icons.menu, // 메뉴 아이콘 사용
+              size: 36, // 아이콘 크기
+              color: Color(0xFF62807D), // 아이콘 색상
             ),
             const SizedBox(height: 29),
             Text(
@@ -29,24 +28,23 @@ class WelcomeHeader extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(width: 78),
+        const Spacer(), // 남은 공간을 차지하여 오른쪽으로 이동
         Column(
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(38),
-              child: Image.network(
-                'https://cdn.builder.io/api/v1/image/assets/TEMP/6c43bc2c65757942b4c22d11f34094922ae8db10babb7d328beb2581cf78a412?placeholderIfAbsent=true&apiKey=5a2bd66ac2224367918a8ced0d986eb2',
+              child: Image.asset(
+                'assets/images/pet.png', // 프로필 이미지 경로
                 width: 48,
                 height: 48,
                 fit: BoxFit.contain,
               ),
             ),
             const SizedBox(height: 26),
-            Image.network(
-              'https://cdn.builder.io/api/v1/image/assets/TEMP/c10999444e8bd7a04cec62accf3de8898274388d4d89ea50ca9fc62bd40995af?placeholderIfAbsent=true&apiKey=5a2bd66ac2224367918a8ced0d986eb2',
-              width: 37,
-              height: 58,
-              fit: BoxFit.contain,
+            Icon(
+              Icons.search, // 검색 아이콘 사용
+              size: 37, // 아이콘 크기
+              color: const Color.fromARGB(255, 163, 163, 163), // 아이콘 색상
             ),
           ],
         ),
