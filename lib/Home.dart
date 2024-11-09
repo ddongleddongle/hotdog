@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'Login.dart';
-import 'Shop.dart';
+import 'Shop/Shop.dart';
 import 'Start.dart';
 import 'Walking.dart';
 import 'package:intl/intl.dart';  // intl 패키지 import
@@ -79,7 +79,7 @@ class _HomeState extends State<Home> {
         children: [
           Expanded(
             flex: 1,
-            child: Image.asset('assets/pet.png', fit: BoxFit.contain),
+            child: Image.asset('assets/images/pet.png', fit: BoxFit.contain),
           ),
           Expanded(
             flex: 2,

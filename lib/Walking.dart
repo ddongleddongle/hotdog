@@ -64,7 +64,7 @@ class MapSampleState extends State<MapWiget> {
     setState(() {
       _polylines[polylineId] = polyline;
     });
-  }//
+  } //
 
   _requestLocationPermission() async {
     var status = await Permission.location.status;
@@ -80,11 +80,12 @@ class MapSampleState extends State<MapWiget> {
     }
     try {
       List<Placemark> p = await placemarkFromCoordinates(
-          _currentCameraPosition!.target.latitude, _currentCameraPosition!.target.longitude);
+          _currentCameraPosition!.target.latitude,
+          _currentCameraPosition!.target.longitude);
       Placemark place = p[0];
       setState(() {
         _currentAddress =
-        "${place.name}, ${place.locality}, ${place.postalCode}, ${place.country}";
+            "${place.name}, ${place.locality}, ${place.postalCode}, ${place.country}";
         startAddressController.text = _currentAddress;
         _startAddress = _currentAddress;
         _destinationAddress = _currentAddress;
@@ -97,7 +98,8 @@ class MapSampleState extends State<MapWiget> {
   _getAddressFromCoordinates(LatLng coordinates) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        coordinates.latitude, coordinates.longitude,
+        coordinates.latitude,
+        coordinates.longitude,
       );
       Placemark place = placemarks[0];
       return "${place.name}, ${place.locality}, ${place.postalCode}, ${place.country}";
@@ -110,7 +112,8 @@ class MapSampleState extends State<MapWiget> {
   _getCurrentLocation() async {
     await _requestLocationPermission();
     if (mapController != null) {
-      await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+      await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high)
           .then((Position position) async {
         setState(() {
           _currentCameraPosition = CameraPosition(
@@ -162,12 +165,13 @@ class MapSampleState extends State<MapWiget> {
       selectedMarker = marker;
     });
   }
+
   _createPolylines(
-      double startLatitude,
-      double startLongitude,
-      double destinationLatitude,
-      double destinationLongitude,
-      ) async {
+    double startLatitude,
+    double startLongitude,
+    double destinationLatitude,
+    double destinationLongitude,
+  ) async {
     // Initializing PolylinePoints
     polylinePoints = PolylinePoints();
 
@@ -176,8 +180,9 @@ class MapSampleState extends State<MapWiget> {
       request: PolylineRequest(
           origin: PointLatLng(startLatitude, startLongitude),
           destination: PointLatLng(destinationLatitude, destinationLongitude),
-          mode: TravelMode.transit) ,
-      googleApiKey: 'AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0', // Google Maps API Key
+          mode: TravelMode.transit),
+      googleApiKey:
+          'AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0', // Google Maps API Key
     );
 
     // Adding the coordinates to the list
@@ -211,7 +216,8 @@ class MapSampleState extends State<MapWiget> {
     LatLng start = markers.first.position;
     LatLng end = markers.last.position;
 
-    _createPolylines(start.latitude, start.longitude, end.latitude, end.longitude);
+    _createPolylines(
+        start.latitude, start.longitude, end.latitude, end.longitude);
   }
 
   @override
@@ -242,7 +248,7 @@ class MapSampleState extends State<MapWiget> {
               onMapCreated: (GoogleMapController controller) {
                 mapController = controller;
                 _getCurrentLocation();
-                _addPolyline();     //선 긋기 연습
+                _addPolyline(); //선 긋기 연습
               },
               polylines: Set<Polyline>.of(_polylines.values), //선 긋기 연습
               markers: markers,
