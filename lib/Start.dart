@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Home.dart';
+import 'Login.dart';
 
 class Start extends StatelessWidget {
   const Start({super.key});
@@ -10,11 +11,7 @@ class Start extends StatelessWidget {
     Future.delayed(Duration(milliseconds: 1000), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Home(
-          petName: '로그인을 해주세요.',
-          petBirthDay: '0000',
-          coins: 0,
-        )),
+        MaterialPageRoute(builder: (context) => Login()),
       );
     });
 
