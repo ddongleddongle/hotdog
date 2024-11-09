@@ -17,7 +17,7 @@ class ProductRating extends StatelessWidget {
               return const Text(
                 '★', // 채워진 별
                 style: TextStyle(
-                  color: Colors.amber, // 별 색상
+                  color: Color(0xFFAAD5D1), // 별 색상
                   fontSize: 12, // 별 크기
                 ),
               );
@@ -25,7 +25,7 @@ class ProductRating extends StatelessWidget {
               return const Text(
                 '★', // 반짝이는 별
                 style: TextStyle(
-                  color: Colors.amber, // 별 색상
+                  color: Color(0xFFAAD5D1), // 별 색상
                   fontSize: 12,
                 ),
               );
@@ -33,7 +33,7 @@ class ProductRating extends StatelessWidget {
               return const Text(
                 '☆', // 빈 별
                 style: TextStyle(
-                  color: Colors.amber, // 별 색상
+                  color: Color(0xFFAAD5D1), // 별 색상
                   fontSize: 12,
                 ),
               );
