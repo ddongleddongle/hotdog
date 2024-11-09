@@ -10,8 +10,7 @@
 
 - Google Map API
 
-### 주요 언어
-<hr>
+## 주요 언어
 
 - Dart
 
