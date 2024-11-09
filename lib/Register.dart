@@ -95,69 +95,171 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('회원가입'),
-        backgroundColor: Color(0xFFAAD5D1),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: '이메일',
-                border: OutlineInputBorder(),
+      backgroundColor: Color(0xFFF1F1F1),
+      body: Center(
+        // Center 위젯으로 전체를 중앙 정렬
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, // 수직 중앙 정렬
+            crossAxisAlignment: CrossAxisAlignment.center, // 수평 중앙 정렬
+            children: [
+              const Text(
+                'Register',
+                style: TextStyle(
+                  color: Color(0xFF314B49),
+                  fontSize: 48,
+                  fontFamily: 'Mulish',
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: '비밀번호',
-                border: OutlineInputBorder(),
+              SizedBox(height: 50),
+              // 이메일 입력 필드
+              Container(
+                width: 335,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFFB3E0DB), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '이메일',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF3F2D20),
+                      fontSize: 14,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: confirmPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: '비밀번호 확인',
-                border: OutlineInputBorder(),
+              SizedBox(height: 20), // 간격
+              // 비밀번호 입력 필드
+              Container(
+                width: 335,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFFB3E0DB), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '비밀번호',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF3F2D20),
+                      fontSize: 14,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: petNameController,
-              decoration: InputDecoration(
-                labelText: '펫 이름',
-                border: OutlineInputBorder(),
+              SizedBox(height: 20), // 간격
+              // 비밀번호 확인 입력 필드
+              Container(
+                width: 335,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFFB3E0DB), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '비밀번호 확인',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF3F2D20),
+                      fontSize: 14,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: petBirthdateController,
-              decoration: InputDecoration(
-                labelText: '펫 생일 (YYYY-MM-DD)',
-                border: OutlineInputBorder(),
+              SizedBox(height: 20), // 간격
+              // 펫 이름 입력 필드
+              Container(
+                width: 335,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFFB3E0DB), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: petNameController,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '펫 이름',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF3F2D20),
+                      fontSize: 14,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: _register,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFAAD5D1),
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              SizedBox(height: 20), // 간격
+              // 펫 생일 입력 필드
+              Container(
+                width: 335,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFFB3E0DB), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: petBirthdateController,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '펫 생일 (YYYY-MM-DD)',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF3F2D20),
+                      fontSize: 14,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                  ),
+                ),
               ),
-              child: Text(
-                '회원가입',
-                style: TextStyle(fontSize: 18),
+              SizedBox(height: 20), // 간격
+              Container(
+                width: 335, // 버튼 너비 설정
+                height: 65, // 버튼 높이 설정
+                decoration: BoxDecoration(
+                  color: Color(0xFFAAD5D1),
+                  borderRadius: BorderRadius.circular(20), // 버튼 테두리 라운드 설정
+                ),
+                child: ElevatedButton(
+                  onPressed: _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFAAD5D1),
+                    padding: EdgeInsets.zero, // 패딩을 0으로 설정하여 크기 유지
+                  ),
+                  child: Text(
+                    '회원가입',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontFamily: 'Mulish',
+                      fontWeight: FontWeight.w700,
+                      height: 1.06,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'welcome_header.dart';
 import 'category_button.dart';
 import 'product_grid.dart';
+import '../Home.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
 
 class Shop extends StatelessWidget {
@@ -65,7 +66,6 @@ class Shop extends StatelessWidget {
         switch (index) {
           case 0:
             print('홈 선택됨');
-            // 홈 페이지로 이동하도록 구현 필요
             break;
           case 1:
             print('쇼핑 선택됨');

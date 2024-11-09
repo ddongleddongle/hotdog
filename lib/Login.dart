@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'Home.dart';
-import 'Register.dart';
+import 'home.dart'; // Home.dart 파일을 임포트합니다.
+import 'register.dart'; // Register.dart 파일을 임포트합니다.
 
 class Login extends StatefulWidget {
-  const Login({super.key});
+  const Login({Key? key}) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
@@ -22,7 +22,7 @@ class _LoginState extends State<Login> {
     });
 
     final response = await http.post(
-      Uri.parse('http://116.124.191.174:15017/login'),  // 실제 로그인 API URL
+      Uri.parse('http://116.124.191.174:15017/login'), // 실제 로그인 API URL
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': emailController.text,
@@ -83,67 +83,124 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color(0xFFAAD5D1),
-        title: Text('로그인', style: TextStyle(color: Colors.black)),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black54),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: '이메일',
-                border: OutlineInputBorder(),
+      backgroundColor: Color(0xFFF1F1F1),
+      body: Center(
+        child: Container(
+          width: 390,
+          decoration: const BoxDecoration(color: Color(0xFFF1F1F1)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, // 수직 중앙 정렬
+            children: [
+              const Text(
+                'Sign in',
+                style: TextStyle(
+                  color: Color(0xFF314B49),
+                  fontSize: 48,
+                  fontFamily: 'Mulish',
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: '비밀번호',
-                border: OutlineInputBorder(),
+              SizedBox(height: 50), // Sign in과 이메일 입력 필드 사이의 간격
+              Container(
+                width: 350,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFFB3E0DB), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Your Email',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF3F2D20),
+                      fontSize: 14,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 40),
-            isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-              onPressed: _login,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFAAD5D1),
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              SizedBox(height: 20), // 이메일 입력 필드와 비밀번호 입력 필드 사이의 간격
+              Container(
+                width: 350,
+                height: 60,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFFB3E0DB), width: 1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: '비밀번호',
+                    hintStyle: TextStyle(
+                      color: Color(0xFF3F2D20),
+                      fontSize: 14,
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                  ),
+                ),
               ),
-              child: Text(
-                '로그인',
-                style: TextStyle(fontSize: 18),
+              SizedBox(height: 10), // 비밀번호 입력 필드와 비밀번호 찾기 버튼 사이의 간격
+              TextButton(
+                onPressed: () {
+                  print('비밀번호 찾기 클릭');
+                },
+                child: Text(
+                  '비밀번호를 잊으셨나요?',
+                  style: TextStyle(color: Colors.black54),
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                print('비밀번호 찾기 클릭');
-              },
-              child: Text('비밀번호를 잊으셨나요?', style: TextStyle(color: Colors.black54)),
-            ),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Register()),
-                );
-              },
-              child: Text('회원가입', style: TextStyle(color: Color(0xFF62807D))),
-            ),
-          ],
+              SizedBox(height: 10), // 비밀번호 찾기 버튼과 회원가입 버튼 사이의 간격
+              GestureDetector(
+                onTap: () {
+                  if (!isLoading) {
+                    _login(); // 로그인 버튼 클릭 시 _login 호출
+                  }
+                },
+                child: Container(
+                  width: 335,
+                  height: 65,
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFAAD5D1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Center(
+                    child: const Text(
+                      '로그인',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontFamily: 'Mulish',
+                        fontWeight: FontWeight.w700,
+                        height: 1.06,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Register()),
+                  );
+                },
+                child: Text(
+                  '회원가입',
+                  style: TextStyle(color: Color(0xFF62807D)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
