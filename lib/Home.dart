@@ -1,11 +1,39 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'Login.dart';
 import 'Shop.dart';
 import 'Start.dart';
 import 'Walking.dart';
+import 'package:intl/intl.dart';  // intl 패키지 import
 
-class Home extends StatelessWidget {
-  const Home({super.key});
+class Home extends StatefulWidget {
+  final String petName;
+  final String petBirthDay;
+  final int coins;
+
+  Home({
+    super.key,
+    required this.petName,
+    required this.petBirthDay,
+    required this.coins,
+  });
+
+  @override
+  _HomeState createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  bool isLoggedIn = true;
+
+  // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
+  String _formatBirthDate(String birthDate) {
+    // String을 DateTime으로 변환
+    DateTime date = DateTime.parse(birthDate);
+
+    // 날짜 형식으로 포맷
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +66,7 @@ class Home extends StatelessWidget {
     );
   }
 
+  // 프로필 섹션 (로그인 상태에 따라 다르게 표시)
   Widget _buildProfileSection() {
     return Container(
       margin: EdgeInsets.fromLTRB(0, 30, 0, 30),
@@ -54,9 +83,18 @@ class Home extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildProfileText('이름: DB처리'),
-                _buildProfileText('생일: DB처리'),
-                _buildProfileText('보유 포인트: DB처리'),
+                isLoggedIn
+                    ? _buildProfileText('이름: ${widget.petName}')
+                    : _buildProfileText('로그인 하세요'),
+                isLoggedIn
+                    ? _buildProfileText('생일: ${_formatBirthDate(widget.petBirthDay)}')  // 생일 포맷 적용
+                    : SizedBox(),
+                isLoggedIn
+                    ? _buildProfileText('보유 포인트: ${widget.coins}')
+                    : SizedBox(),
+                !isLoggedIn
+                    ? _buildProfileText('로그인을 하여 정보를 확인하세요')
+                    : SizedBox(),
               ],
             ),
           ),
@@ -65,6 +103,7 @@ class Home extends StatelessWidget {
     );
   }
 
+  // 프로필 텍스트를 출력하는 위젯
   Widget _buildProfileText(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -148,7 +187,6 @@ class Home extends StatelessWidget {
     );
   }
 
-  // 아래로 쭉 하단바
   BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
       items: [
@@ -198,4 +236,3 @@ class Home extends StatelessWidget {
     );
   }
 }
-// 여기 껄쥐

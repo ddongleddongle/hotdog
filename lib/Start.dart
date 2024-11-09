@@ -10,7 +10,11 @@ class Start extends StatelessWidget {
     Future.delayed(Duration(milliseconds: 1000), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Home()),
+        MaterialPageRoute(builder: (context) => Home(
+          petName: '로그인을 해주세요.',
+          petBirthDay: ' ',
+          coins: 0,
+        )),
       );
     });
 
