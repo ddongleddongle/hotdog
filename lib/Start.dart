@@ -10,7 +10,11 @@ class Start extends StatelessWidget {
     Future.delayed(Duration(milliseconds: 1000), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Home()),
+        MaterialPageRoute(builder: (context) => Home(
+          petName: '로그인을 해주세요.',
+          petBirthDay: '0000',
+          coins: 0,
+        )),
       );
     });
 
@@ -27,24 +31,16 @@ class Start extends StatelessWidget {
               children: const [
                 Text(
                   "동반자와 함께 떠나는 모험",
-                  style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold, // 볼드체 설정
-                  ),
+                  style: TextStyle(fontSize: 25, color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 20), // 아래쪽 여백 추가
                 Text(
                   "핫도그",
-                  style: TextStyle(
-                    fontSize: 50,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold, // 볼드체 설정
-                  ),
+                  style: TextStyle(fontSize: 50, color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 60),
+                SizedBox(height: 60), // 아래쪽 여백 추가
               ],
             ),
           ),
