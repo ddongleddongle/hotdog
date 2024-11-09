@@ -8,8 +8,8 @@ class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 120,
-      height: 120,
+      width: 130,
+      height: 130,
       decoration: BoxDecoration(
         color: Color.fromARGB(255, 200, 230, 230),
         borderRadius: BorderRadius.circular(20),
@@ -20,6 +20,97 @@ class ProductItem extends StatelessWidget {
           fit: BoxFit.contain,
         ),
       ),
+    );
+  }
+}
+
+class ProductRating extends StatelessWidget {
+  final double rating;
+  final int reviews;
+
+  const ProductRating({Key? key, required this.rating, required this.reviews})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Row(
+          children: List.generate(5, (index) {
+            if (index < rating.floor()) {
+              return const Text(
+                '★', // 채워진 별
+                style: TextStyle(
+                  color: Color(0xFF84C1BE), // 별 색상
+                  fontSize: 12, // 별 크기
+                ),
+              );
+            } else if (index < rating.ceil()) {
+              return const Text(
+                '★', // 반짝이는 별
+                style: TextStyle(
+                  color: Color(0xFF84C1BE), // 별 색상
+                  fontSize: 12,
+                ),
+              );
+            } else {
+              return const Text(
+                '☆', // 빈 별
+                style: TextStyle(
+                  color: Color(0xFF84C1BE), // 별 색상
+                  fontSize: 12,
+                ),
+              );
+            }
+          }),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '($reviews)',
+          style: TextStyle(
+            color: const Color(0x801D1D1D),
+            fontSize: 6,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Monument Extended',
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ProductInfo extends StatelessWidget {
+  final String name;
+  final int match;
+
+  const ProductInfo({Key? key, required this.name, required this.match})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          name,
+          style: TextStyle(
+            color: Color(0xFF1D1D1D),
+            fontSize: 10,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Monument Extended',
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '$match% Match',
+          style: TextStyle(
+            color: Color(0xFF84C1BE),
+            fontSize: 8,
+            fontWeight: FontWeight.w400,
+            fontFamily: 'Monument Extended',
+          ),
+        ),
+      ],
     );
   }
 }
