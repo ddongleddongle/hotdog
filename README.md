@@ -1,16 +1,17 @@
-# software
+# HotDog
 
-A new Flutter project.
+반려동물과 함께하는 시간을 늘리기 위한 산책어플
 
-## Getting Started
+## 주요 기술
 
-This project is a starting point for a Flutter application.
+- Flutter
 
-A few resources to get you started if this is your first Flutter project:
+- Rest API 
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Google Map API
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 주요 언어
+
+- Dart
+
+
