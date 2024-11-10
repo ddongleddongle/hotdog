@@ -8,7 +8,7 @@ void main() async {
   //await DBconnector.connect(); // DB 연결
 
   runApp(
-    ChangeNotifierProvider(
+    ChangeNotifierProvider( // 사용자 Login token 관련 - 민수꺼
       create: (context) => UserProvider(),
       child: MyApp(),
     ),

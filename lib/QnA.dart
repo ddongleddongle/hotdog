@@ -67,23 +67,12 @@ class _QnAState extends State<QnA> {
                 ? Icon(Icons.lock, color: Colors.grey)
                 : Icon(Icons.arrow_forward_ios),
             onTap: () {
-              if (isPrivate) {
-                if (post['email'] == user.email) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QnADetail(
-                        title: post['title'],
-                        content: post['content'],
-                      ),
-                    ),
-                  );
-                } else {
-                  // 비공개 글에 접근할 수 없는 경우 알림 표시
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('비공개 글입니다. 본인만 접근할 수 있습니다.')),
-                  );
-                }
+              // email이 'admin'이거나 본인이 작성한 글이라면 비공개 글에 접근 허용
+              if (isPrivate && user.email != 'admin' && post['email'] != user.email) {
+                // 비공개 글에 접근할 수 없는 경우 알림 표시
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('비공개 글입니다. 본인만 접근할 수 있습니다.')),
+                );
               } else {
                 Navigator.push(
                   context,
@@ -91,6 +80,7 @@ class _QnAState extends State<QnA> {
                     builder: (context) => QnADetail(
                       title: post['title'],
                       content: post['content'],
+                      authorEmail: post['email'],
                     ),
                   ),
                 );
