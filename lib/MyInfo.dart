@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:software/Walking.dart';
 import 'Home.dart';
 import 'Login.dart';
 import 'QnA.dart';
 import 'MyInfoModi.dart';
+import 'Shop/Shop.dart';
 import 'User_Provider.dart';
+import 'Shop/shop.dart';
+import 'Walking.dart';
 
 class MyInfo extends StatefulWidget {
   @override
@@ -14,7 +18,7 @@ class MyInfo extends StatefulWidget {
 
 class _MyInfoState extends State<MyInfo> {
   final TextEditingController _passwordController =
-      TextEditingController(); // 비밀번호 입력 컨트롤러
+  TextEditingController(); // 비밀번호 입력 컨트롤러
   bool _isPasswordCorrect = true; // 비밀번호 확인 여부
 
   // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
@@ -29,7 +33,7 @@ class _MyInfoState extends State<MyInfo> {
   @override
   Widget build(BuildContext context) {
     final user =
-        Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
+    Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Container(
@@ -81,7 +85,7 @@ class _MyInfoState extends State<MyInfo> {
                     : _buildProfileText('로그인 하세요'),
                 user.petBirthDay != null
                     ? _buildProfileText(
-                        '생일: ${_formatBirthDate(user.petBirthDay)}')
+                    '생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 user.coins != 0
                     ? _buildProfileText('보유 포인트: ${user.coins}')
@@ -170,7 +174,9 @@ class _MyInfoState extends State<MyInfo> {
                 // 비밀번호 확인
                 final enteredPassword = _passwordController.text;
                 final correctPassword =
-                    Provider.of<UserProvider>(context, listen: false).password;
+                    Provider
+                        .of<UserProvider>(context, listen: false)
+                        .password;
 
                 if (enteredPassword == correctPassword) {
                   Navigator.of(context).pop(); // 다이얼로그 닫기
@@ -257,10 +263,16 @@ class _MyInfoState extends State<MyInfo> {
     );
   }
 
-  BottomNavigationBar _buildBottomNavigationBar(BuildContext context) {
+  int _currentIndex = 3;
+
+  BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      // 현재 선택된 인덱스
       items: [
+
         BottomNavigationBarItem(
+
           icon: Icon(Icons.home),
           label: '홈',
         ),
@@ -285,26 +297,41 @@ class _MyInfoState extends State<MyInfo> {
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
+        setState(() {
+          _currentIndex = index; // 인덱스 업데이트
+        });
         switch (index) {
           case 0:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Home(),
-              ),
-            );
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            break;
-          case 2:
-            break;
-          case 3:
+<<<<<<< HEAD
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => MyInfo(),
+                builder: (context) => Shop(),
               ),
             );
+          case 2:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Walking(),
+              ),
+            );
+=======
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Shop()));
+            break;
+          case 2:
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Walking()));
+            break;
+>>>>>>> 8126b3f22d907d32047783f3e66a46022397bdf7
+          case 3:
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
         }
       },

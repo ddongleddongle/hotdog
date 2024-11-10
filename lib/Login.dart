@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'home.dart'; // Home.dart 파일을 임포트합니다.
 import 'register.dart'; // Register.dart 파일을 임포트합니다';
 import 'User_Provider.dart';
+import 'FindPassword.dart';
 
 class Login extends StatefulWidget {
   Login({Key? key}) : super(key: key);
@@ -23,6 +24,15 @@ class _LoginState extends State<Login> {
       isLoading = true;
     });
 
+    // 이메일과 비밀번호가 입력되지 않았다면 오류 메시지 표시
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      setState(() {
+        isLoading = false;
+      });
+      _showErrorDialog('입력 오류', '이메일 또는 비밀번호를 입력해주세요.');
+      return; // 입력되지 않으면 로그인 진행하지 않음
+    }
+
     final response = await http.post(
       Uri.parse('http://116.124.191.174:15017/login'), // 실제 로그인 API URL
       headers: {'Content-Type': 'application/json'},
@@ -35,6 +45,10 @@ class _LoginState extends State<Login> {
     setState(() {
       isLoading = false;
     });
+
+    // 응답 코드와 응답 본문 로그 출력
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -53,10 +67,19 @@ class _LoginState extends State<Login> {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Home()));
       } else {
+        // 로그인 실패 (이메일 또는 비밀번호 오류)
         _showErrorDialog('로그인 실패', '이메일 또는 비밀번호가 잘못되었습니다.');
       }
+    } else if (response.statusCode == 400) {
+      // 서버가 400을 반환했을 때 (이메일 또는 비밀번호 잘못됨)
+      final data = jsonDecode(response.body);
+      _showErrorDialog('로그인 실패', data['message'] ?? '이메일 또는 비밀번호가 잘못되었습니다.');
+    } else if (response.statusCode == 500) {
+      // 서버 오류
+      _showErrorDialog('로그인 실패', '서버 오류가 발생했습니다.');
     } else {
-      _showErrorDialog('로그인 실패', '서버와의 연결이 실패했습니다.');
+      // 그 외의 오류 코드 처리
+      _showErrorDialog('로그인 실패', '알 수 없는 오류가 발생했습니다.');
     }
   }
 
@@ -155,6 +178,10 @@ class _LoginState extends State<Login> {
                 TextButton(
                   onPressed: () {
                     print('비밀번호 찾기 클릭');
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FindPassword()),
+                    );
                   },
                   child: Text(
                     '비밀번호를 잊으셨나요?',
