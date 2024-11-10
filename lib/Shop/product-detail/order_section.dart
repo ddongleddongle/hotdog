@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../ProductClass.dart'; // ProductClass 모델을 import 합니다.
 
 class OrderSection extends StatefulWidget {
-  const OrderSection({Key? key}) : super(key: key);
+  final ProductClass product; // 상품 정보를 받을 변수
+
+  const OrderSection({Key? key, required this.product}) : super(key: key);
 
   @override
   _OrderSectionState createState() => _OrderSectionState();
@@ -26,6 +29,8 @@ class _OrderSectionState extends State<OrderSection> {
 
   @override
   Widget build(BuildContext context) {
+    final int totalPrice = _itemCount * widget.product.price.toInt();
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
       decoration: const BoxDecoration(
@@ -40,7 +45,7 @@ class _OrderSectionState extends State<OrderSection> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center, // Row 내부 아이템 중앙 정렬
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -49,11 +54,11 @@ class _OrderSectionState extends State<OrderSection> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center, // 아이콘과 텍스트 중앙 정렬
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                   icon: Icon(Icons.remove, color: Color(0xFFAAD5D1)),
-                  onPressed: _decrementCount, // - 버튼 클릭 시 동작
+                  onPressed: _decrementCount,
                 ),
                 const SizedBox(width: 14),
                 Text(
@@ -67,7 +72,7 @@ class _OrderSectionState extends State<OrderSection> {
                 const SizedBox(width: 14),
                 IconButton(
                   icon: Icon(Icons.add, color: Color(0xFFAAD5D1)),
-                  onPressed: _incrementCount, // + 버튼 클릭 시 동작
+                  onPressed: _incrementCount,
                 ),
               ],
             ),
@@ -77,8 +82,7 @@ class _OrderSectionState extends State<OrderSection> {
             child: ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color(0xFFAAD5D1), // primary 대신 backgroundColor 사용
+                backgroundColor: const Color(0xFFAAD5D1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -86,8 +90,8 @@ class _OrderSectionState extends State<OrderSection> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     'Add to order',
                     style: TextStyle(
                       fontSize: 16,
@@ -95,10 +99,10 @@ class _OrderSectionState extends State<OrderSection> {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
-                    '\$20.00',
-                    style: TextStyle(
+                    '\$$totalPrice', // 총 가격 표시
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
