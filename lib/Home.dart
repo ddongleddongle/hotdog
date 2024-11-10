@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'Login.dart';
 import 'Shop/Shop.dart';
 import 'Start.dart';
@@ -88,7 +86,7 @@ class _HomeState extends State<Home> {
                     : _buildProfileText('로그인 하세요'),
                 isLoggedIn
                     ? _buildProfileText(
-                    '생일: ${_formatBirthDate(user.petBirthDay)}')
+                        '생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 isLoggedIn
                     ? _buildProfileText('보유 포인트: ${user.coins}')

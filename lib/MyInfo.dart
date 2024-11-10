@@ -13,7 +13,8 @@ class MyInfo extends StatefulWidget {
 }
 
 class _MyInfoState extends State<MyInfo> {
-  final TextEditingController _passwordController = TextEditingController(); // 비밀번호 입력 컨트롤러
+  final TextEditingController _passwordController =
+      TextEditingController(); // 비밀번호 입력 컨트롤러
   bool _isPasswordCorrect = true; // 비밀번호 확인 여부
 
   // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
@@ -27,7 +28,8 @@ class _MyInfoState extends State<MyInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
+    final user =
+        Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Container(
@@ -78,7 +80,8 @@ class _MyInfoState extends State<MyInfo> {
                     ? _buildProfileText('이름: ${user.petName}')
                     : _buildProfileText('로그인 하세요'),
                 user.petBirthDay != null
-                    ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
+                    ? _buildProfileText(
+                        '생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 user.coins != 0
                     ? _buildProfileText('보유 포인트: ${user.coins}')
@@ -148,7 +151,8 @@ class _MyInfoState extends State<MyInfo> {
       builder: (context) {
         return AlertDialog(
           title: Text("비밀번호 확인"),
-          content: SingleChildScrollView( // 키보드가 올라왔을 때 스크롤이 가능하도록 함
+          content: SingleChildScrollView(
+            // 키보드가 올라왔을 때 스크롤이 가능하도록 함
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -165,7 +169,8 @@ class _MyInfoState extends State<MyInfo> {
               onPressed: () {
                 // 비밀번호 확인
                 final enteredPassword = _passwordController.text;
-                final correctPassword = Provider.of<UserProvider>(context, listen: false).password;
+                final correctPassword =
+                    Provider.of<UserProvider>(context, listen: false).password;
 
                 if (enteredPassword == correctPassword) {
                   Navigator.of(context).pop(); // 다이얼로그 닫기
