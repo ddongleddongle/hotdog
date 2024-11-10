@@ -7,7 +7,7 @@ import 'register.dart'; // Register.dart 파일을 임포트합니다';
 import 'User_Provider.dart';
 
 class Login extends StatefulWidget {
-   Login({Key? key}) : super(key: key);
+  Login({Key? key}) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
@@ -45,13 +45,12 @@ class _LoginState extends State<Login> {
         final petBirthDay = data['pet_birthdate'];
         final coins = data['coins'];
 
-        Provider.of<UserProvider>(context, listen: false).login(
-          email, password, petName, petBirthDay, coins);
+        Provider.of<UserProvider>(context, listen: false)
+            .login(email, password, petName, petBirthDay, coins);
 
         // 로그인 성공 후 사용자 정보를 전달하여 Home 화면으로 이동
         Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Home()));
+            context, MaterialPageRoute(builder: (context) => Home()));
       } else {
         _showErrorDialog('로그인 실패', '이메일 또는 비밀번호가 잘못되었습니다.');
       }
@@ -124,7 +123,7 @@ class _LoginState extends State<Login> {
                         fontSize: 14,
                       ),
                       contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 19),
                     ),
                   ),
                 ),
@@ -147,7 +146,7 @@ class _LoginState extends State<Login> {
                         fontSize: 14,
                       ),
                       contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 19),
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 19),
                     ),
                   ),
                 ),

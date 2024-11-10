@@ -1,12 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'welcome_header.dart';
 import 'category_button.dart';
 import 'product_grid.dart';
 import '../Home.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
+import 'ProductClass.dart'; // Product 모델을 임포트합니다.
 
-class Shop extends StatelessWidget {
+class Shop extends StatefulWidget {
   const Shop({Key? key}) : super(key: key);
+
+  @override
+  _ShopState createState() => _ShopState();
+}
+
+class _ShopState extends State<Shop> {
+  List<ProductClass> products = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+  }
+
+  Future<void> fetchProducts() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://116.124.191.174:15017/shop'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> productList =
+            json.decode(response.body)['products'];
+        setState(() {
+          products =
+              productList.map((json) => ProductClass.fromJson(json)).toList();
+          isLoading = false; // 데이터 로딩 완료
+        });
+      } else {
+        throw Exception('Failed to load products');
+      }
+    } catch (error) {
+      print('Error fetching products: $error');
+      setState(() {
+        isLoading = false; // 에러 발생 시 로딩 종료
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +64,16 @@ class Shop extends StatelessWidget {
                 const SizedBox(height: 27),
                 const CategoryButton(),
                 const SizedBox(height: 29),
-                ProductGrid(),
+                isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : ProductGrid(products: products), // ProductGrid에 상품 목록 전달
                 const SizedBox(height: 57),
-                ProductGrid(),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context), // 하단 네비게이션 바 추가
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
