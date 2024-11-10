@@ -179,8 +179,8 @@ class _LoginState extends State<Login> {
                   onPressed: () {
                     print('비밀번호 찾기 클릭');
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => FindPassword()),
+                      context,
+                      MaterialPageRoute(builder: (context) => FindPassword()),
                     );
                   },
                   child: Text(
