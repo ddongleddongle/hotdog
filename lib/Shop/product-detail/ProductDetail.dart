@@ -4,7 +4,6 @@ import 'product_presentation.dart';
 import 'product_content.dart';
 import 'order_section.dart';
 import 'product_review.dart'; // ReviewSection 추가
-import 'ingredients_carousel.dart'; // IngredientsCarousel 추가
 import '../ProductClass.dart'; // Product 모델 import
 
 class ProductDetail extends StatelessWidget {
