@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:software/MyInfo.dart';
 import 'dart:convert';
 import 'welcome_header.dart';
 import 'category_button.dart';
@@ -107,22 +108,34 @@ class _ShopState extends State<Shop> {
       onTap: (index) {
         switch (index) {
           case 0:
-            print('홈 선택됨');
-            break;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Home(),
+              ),
+            );
           case 1:
-            print('쇼핑 선택됨');
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Shop()));
-            break;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Shop(),
+              ),
+            );
           case 2:
             print('산책 선택됨');
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Walking()));
-            break;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Walking(),
+              ),
+            );
           case 3:
-            print('내정보 선택됨');
-            // 로직 추가 필요
-            break;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MyInfo(),
+              ),
+            );
         }
       },
     );

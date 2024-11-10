@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:software/Walking.dart';
 import 'Home.dart';
 import 'Login.dart';
 import 'QnA.dart';
 import 'MyInfoModi.dart';
+import 'Shop/Shop.dart';
 import 'User_Provider.dart';
 
 class MyInfo extends StatefulWidget {
@@ -255,7 +257,9 @@ class _MyInfoState extends State<MyInfo> {
   BottomNavigationBar _buildBottomNavigationBar(BuildContext context) {
     return BottomNavigationBar(
       items: [
+
         BottomNavigationBarItem(
+
           icon: Icon(Icons.home),
           label: '홈',
         ),
@@ -290,9 +294,19 @@ class _MyInfoState extends State<MyInfo> {
             );
             break;
           case 1:
-            break;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Shop(),
+              ),
+            );
           case 2:
-            break;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Walking(),
+              ),
+            );
           case 3:
             Navigator.pushReplacement(
               context,

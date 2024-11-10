@@ -59,7 +59,7 @@ class _HomeState extends State<Home> {
         icon: Icon(Icons.settings, color: Colors.black54),
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Start()));
+              context, MaterialPageRoute(builder: (context) => Home()));
         },
       ),
       title: Text("Hot Dog", style: TextStyle(color: Colors.black)),
