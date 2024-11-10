@@ -7,6 +7,7 @@ import 'Walking.dart';
 import 'package:intl/intl.dart';
 import 'MyInfo.dart';
 import 'User_Provider.dart';
+import 'test.dart';
 
 class Home extends StatefulWidget {
   Home({Key? key}) : super(key: key);
@@ -145,6 +146,8 @@ class _HomeState extends State<Home> {
   }
 
   Widget _buildWalkingButton(BuildContext context) {
+    final user = Provider.of<UserProvider>(context); // 유저 정보를 가져옵니다.
+
     return Container(
       padding: EdgeInsets.all(30),
       margin: EdgeInsets.only(bottom: 60),
@@ -153,7 +156,16 @@ class _HomeState extends State<Home> {
         width: double.infinity,
         child: _buildButton('산책하러가기', () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Walking()));
+            context,
+            MaterialPageRoute(
+              builder: (context) => test(
+                // Test 페이지로 유저 정보를 전달
+                petName: user.petName,
+                coins: user.coins,
+                totaldistance: user.totaldistance,
+              ),
+            ),
+          );
         }),
       ),
     );
@@ -190,6 +202,7 @@ class _HomeState extends State<Home> {
   }
 
   BottomNavigationBar _buildBottomNavigationBar(context) {
+    final user = Provider.of<UserProvider>(context); // 유저 정보를 가져옵니다.
     return BottomNavigationBar(
       items: [
         BottomNavigationBarItem(
@@ -231,7 +244,15 @@ class _HomeState extends State<Home> {
           case 2:
             print('산책 선택됨');
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Walking()));
+                context,
+                MaterialPageRoute(
+                  builder: (context) => test(
+                    // Test 페이지로 유저 정보를 전달
+                    petName: user.petName,
+                    coins: user.coins,
+                    totaldistance: user.totaldistance,
+                  ),
+                ));
             break;
           case 3:
             print('내정보 선택됨');
