@@ -122,7 +122,7 @@ class _MyInfoState extends State<MyInfo> {
       child: SizedBox(
         width: double.infinity,
         height: 50,
-        child: _buildButton('QnA', () => _navigateToQnA(context)),
+        child: _buildButton('Q&A', () => _navigateToQnA(context)),
       ),
     );
   }
