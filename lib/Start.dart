@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Home.dart';
+import 'Login.dart';
 
 class Start extends StatelessWidget {
   const Start({super.key});
@@ -10,7 +11,7 @@ class Start extends StatelessWidget {
     Future.delayed(Duration(milliseconds: 1000), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Home()),
+        MaterialPageRoute(builder: (context) => Login()),
       );
     });
 
@@ -25,7 +26,8 @@ class Start extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset( '/images/logo.png', width: 200, height: 200, fit: BoxFit.cover, ),
+
+                Image.asset('assets/images/logo.png', width: 200, height: 200, fit: BoxFit.cover, ),
                 
                 const SizedBox(height: 20),
                 const Text(

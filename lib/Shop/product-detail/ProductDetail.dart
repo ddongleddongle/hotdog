@@ -4,10 +4,12 @@ import 'product_presentation.dart';
 import 'product_content.dart';
 import 'order_section.dart';
 import 'product_review.dart'; // ReviewSection 추가
-import 'ingredients_carousel.dart'; // IngredientsCarousel 추가
+import '../ProductClass.dart'; // Product 모델 import
 
-class product extends StatelessWidget {
-  const product({Key? key}) : super(key: key);
+class ProductDetail extends StatelessWidget {
+  final ProductClass product; // 상품 정보를 받을 변수
+
+  const ProductDetail({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +29,12 @@ class product extends StatelessWidget {
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Column(
-                  children: const [
+                  children: [
                     ProductHeader(),
-                    SizedBox(height: 16),
-                    ProductPresentation(),
-                    ProductContent(),
-                    ReviewSection(), // 리뷰 섹션 추가
+                    const SizedBox(height: 16),
+                    ProductPresentation(product: product), // 상품 정보를 전달
+                    ProductContent(product: product),
+                    ReviewSection(),
                   ],
                 ),
               ),
@@ -40,7 +42,7 @@ class product extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const OrderSection(), // OrderSection을 하단바로 설정
+      bottomNavigationBar: OrderSection(product: product), // const 제거
     );
   }
 }

@@ -95,7 +95,7 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF1F1F1),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: Center(
         // Center 위젯으로 전체를 중앙 정렬
         child: Padding(

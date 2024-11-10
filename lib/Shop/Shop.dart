@@ -1,12 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:software/MyInfo.dart';
+import 'dart:convert';
 import 'welcome_header.dart';
 import 'category_button.dart';
 import 'product_grid.dart';
 import '../Home.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
+import 'ProductClass.dart'; // Product 모델을 임포트합니다.
+import '../MyInfo.dart';
 
-class Shop extends StatelessWidget {
+class Shop extends StatefulWidget {
   const Shop({Key? key}) : super(key: key);
+
+  @override
+  _ShopState createState() => _ShopState();
+}
+
+class _ShopState extends State<Shop> {
+  List<ProductClass> products = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+  }
+
+  Future<void> fetchProducts() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://116.124.191.174:15017/shop'));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> productList =
+            json.decode(response.body)['products'];
+        setState(() {
+          products =
+              productList.map((json) => ProductClass.fromJson(json)).toList();
+          isLoading = false; // 데이터 로딩 완료
+        });
+      } else {
+        throw Exception('Failed to load products');
+      }
+    } catch (error) {
+      print('Error fetching products: $error');
+      setState(() {
+        isLoading = false; // 에러 발생 시 로딩 종료
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,20 +66,25 @@ class Shop extends StatelessWidget {
                 const SizedBox(height: 27),
                 const CategoryButton(),
                 const SizedBox(height: 29),
-                ProductGrid(),
+                isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : ProductGrid(products: products), // ProductGrid에 상품 목록 전달
                 const SizedBox(height: 57),
-                ProductGrid(),
               ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context), // 하단 네비게이션 바 추가
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
-  BottomNavigationBar _buildBottomNavigationBar(BuildContext context) {
+  int _currentIndex = 1;
+
+  BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      // 현재 선택된 인덱스
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -63,23 +111,53 @@ class Shop extends StatelessWidget {
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
+        setState(() {
+          _currentIndex = index; // 인덱스 업데이트
+        });
         switch (index) {
           case 0:
-            print('홈 선택됨');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Home(),
+              ),
+            );
+          case 1:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Shop(),
+              ),
+            );
+          case 2:
+            print('산책 선택됨');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Walking(),
+              ),
+            );
+          case 3:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MyInfo(),
+              ),
+            );
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
-            print('산책 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
           case 3:
-            print('내정보 선택됨');
-            // 로직 추가 필요
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
         }
       },
