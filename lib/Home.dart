@@ -86,7 +86,7 @@ class _HomeState extends State<Home> {
                     : _buildProfileText('로그인 하세요'),
                 isLoggedIn
                     ? _buildProfileText(
-                        '생일: ${_formatBirthDate(user.petBirthDay)}')
+                    '생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 isLoggedIn
                     ? _buildProfileText('보유 포인트: ${user.coins}')
@@ -189,8 +189,12 @@ class _HomeState extends State<Home> {
     );
   }
 
+  int _currentIndex = 0;
+
   BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      // 현재 선택된 인덱스
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -217,24 +221,23 @@ class _HomeState extends State<Home> {
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
+        setState(() {
+          _currentIndex = index; // 인덱스 업데이트
+        });
         switch (index) {
           case 0:
-            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
-            print('산책 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
           case 3:
-            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
