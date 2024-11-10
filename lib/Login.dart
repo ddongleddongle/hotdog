@@ -58,9 +58,10 @@ class _LoginState extends State<Login> {
         final petName = data['pet_name'];
         final petBirthDay = data['pet_birthdate'];
         final coins = data['coins'];
+        final totaldistance = data['totaldistance'];
 
         Provider.of<UserProvider>(context, listen: false)
-            .login(email, password, petName, petBirthDay, coins);
+            .login(email, password, petName, petBirthDay, coins, totaldistance);
 
         // 로그인 성공 후 사용자 정보를 전달하여 Home 화면으로 이동
         Navigator.pushReplacement(
@@ -178,8 +179,8 @@ class _LoginState extends State<Login> {
                   onPressed: () {
                     print('비밀번호 찾기 클릭');
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => FindPassword()),
+                      context,
+                      MaterialPageRoute(builder: (context) => FindPassword()),
                     );
                   },
                   child: Text(

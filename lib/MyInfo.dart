@@ -17,7 +17,7 @@ class MyInfo extends StatefulWidget {
 
 class _MyInfoState extends State<MyInfo> {
   final TextEditingController _passwordController =
-  TextEditingController(); // 비밀번호 입력 컨트롤러
+      TextEditingController(); // 비밀번호 입력 컨트롤러
   bool _isPasswordCorrect = true; // 비밀번호 확인 여부
 
   // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
@@ -32,7 +32,7 @@ class _MyInfoState extends State<MyInfo> {
   @override
   Widget build(BuildContext context) {
     final user =
-    Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
+        Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Container(
@@ -84,7 +84,7 @@ class _MyInfoState extends State<MyInfo> {
                     : _buildProfileText('로그인 하세요'),
                 user.petBirthDay != null
                     ? _buildProfileText(
-                    '생일: ${_formatBirthDate(user.petBirthDay)}')
+                        '생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 user.coins != 0
                     ? _buildProfileText('보유 포인트: ${user.coins}')
@@ -173,9 +173,7 @@ class _MyInfoState extends State<MyInfo> {
                 // 비밀번호 확인
                 final enteredPassword = _passwordController.text;
                 final correctPassword =
-                    Provider
-                        .of<UserProvider>(context, listen: false)
-                        .password;
+                    Provider.of<UserProvider>(context, listen: false).password;
 
                 if (enteredPassword == correctPassword) {
                   Navigator.of(context).pop(); // 다이얼로그 닫기
@@ -269,9 +267,7 @@ class _MyInfoState extends State<MyInfo> {
       currentIndex: _currentIndex,
       // 현재 선택된 인덱스
       items: [
-
         BottomNavigationBarItem(
-
           icon: Icon(Icons.home),
           label: '홈',
         ),

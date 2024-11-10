@@ -5,9 +5,9 @@ import 'dart:convert';
 import 'welcome_header.dart';
 import 'category_button.dart';
 import 'product_grid.dart';
-import '../Home.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
 import 'ProductClass.dart'; // Product 모델을 임포트합니다.
+import '../Home.dart';
 import '../MyInfo.dart';
 
 class Shop extends StatefulWidget {
