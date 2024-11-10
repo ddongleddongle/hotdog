@@ -7,6 +7,7 @@ import 'product_grid.dart';
 import '../Home.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
 import 'ProductClass.dart'; // Product 모델을 임포트합니다.
+import '../MyInfo.dart';
 
 class Shop extends StatefulWidget {
   const Shop({Key? key}) : super(key: key);
@@ -77,8 +78,12 @@ class _ShopState extends State<Shop> {
     );
   }
 
-  BottomNavigationBar _buildBottomNavigationBar(BuildContext context) {
+  int _currentIndex = 1;
+
+  BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      // 현재 선택된 인덱스
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -105,23 +110,25 @@ class _ShopState extends State<Shop> {
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
+        setState(() {
+          _currentIndex = index; // 인덱스 업데이트
+        });
         switch (index) {
           case 0:
-            print('홈 선택됨');
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
-            print('산책 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
           case 3:
-            print('내정보 선택됨');
-            // 로직 추가 필요
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
         }
       },
