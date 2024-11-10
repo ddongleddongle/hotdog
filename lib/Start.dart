@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'Home.dart';
-import 'Login.dart';
 
 class Start extends StatelessWidget {
   const Start({super.key});
@@ -11,7 +10,7 @@ class Start extends StatelessWidget {
     Future.delayed(Duration(milliseconds: 1000), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Login()),
+        MaterialPageRoute(builder: (context) => Home()),
       );
     });
 
@@ -25,19 +24,22 @@ class Start extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
+              children: [
+                Image.asset( '/images/logo.png', width: 200, height: 200, fit: BoxFit.cover, ),
+                
+                const SizedBox(height: 20),
+                const Text(
                   "동반자와 함께 떠나는 모험",
                   style: TextStyle(fontSize: 25, color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20), // 아래쪽 여백 추가
-                Text(
+                const SizedBox(height: 20), // 아래쪽 여백 추가
+                const Text(
                   "핫도그",
                   style: TextStyle(fontSize: 50, color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 60), // 아래쪽 여백 추가
+                const SizedBox(height: 60), // 아래쪽 여백 추가
               ],
             ),
           ),
