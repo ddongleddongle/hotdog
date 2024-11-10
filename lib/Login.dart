@@ -83,11 +83,12 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF1F1F1),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: Center(
         child: Container(
           width: 390,
-          decoration: const BoxDecoration(color: Color(0xFFF1F1F1)),
+          decoration:
+              const BoxDecoration(color: Color.fromARGB(255, 255, 255, 255)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center, // 수직 중앙 정렬
             children: [

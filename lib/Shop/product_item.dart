@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ProductItem extends StatelessWidget {
-  final String imageUrl;
+  final String imageURL;
 
-  const ProductItem({Key? key, required this.imageUrl}) : super(key: key);
+  const ProductItem({Key? key, required this.imageURL}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +15,8 @@ class ProductItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Center(
-        child: Image.network(
-          imageUrl,
+        child: Image.asset(
+          imageURL,
           fit: BoxFit.contain,
         ),
       ),
@@ -26,7 +26,7 @@ class ProductItem extends StatelessWidget {
 
 class ProductRating extends StatelessWidget {
   final double rating;
-  final int reviews;
+  final double reviews;
 
   const ProductRating({Key? key, required this.rating, required this.reviews})
       : super(key: key);
@@ -81,9 +81,9 @@ class ProductRating extends StatelessWidget {
 
 class ProductInfo extends StatelessWidget {
   final String name;
-  final int match;
+  final double matchScore;
 
-  const ProductInfo({Key? key, required this.name, required this.match})
+  const ProductInfo({Key? key, required this.name, required this.matchScore})
       : super(key: key);
 
   @override
@@ -102,7 +102,7 @@ class ProductInfo extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '$match% Match',
+          '$matchScore% Match',
           style: TextStyle(
             color: Color(0xFF84C1BE),
             fontSize: 8,

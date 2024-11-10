@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 class ProductInfo extends StatelessWidget {
   final String name;
-  final int match;
+  final double matchScore;
 
-  const ProductInfo({Key? key, required this.name, required this.match})
+  const ProductInfo({Key? key, required this.name, required this.matchScore})
       : super(key: key);
 
   @override
@@ -23,7 +23,7 @@ class ProductInfo extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '$match% Match',
+          '$matchScore% Match',
           style: TextStyle(
             color: Color(0xFF84C1BE),
             fontSize: 6,
