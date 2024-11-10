@@ -8,7 +8,6 @@ import 'QnA.dart';
 import 'MyInfoModi.dart';
 import 'Shop/Shop.dart';
 import 'User_Provider.dart';
-import 'Shop/shop.dart';
 import 'Walking.dart';
 
 class MyInfo extends StatefulWidget {
@@ -306,7 +305,6 @@ class _MyInfoState extends State<MyInfo> {
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-<<<<<<< HEAD
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -320,7 +318,6 @@ class _MyInfoState extends State<MyInfo> {
                 builder: (context) => Walking(),
               ),
             );
-=======
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
@@ -328,7 +325,6 @@ class _MyInfoState extends State<MyInfo> {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
->>>>>>> 8126b3f22d907d32047783f3e66a46022397bdf7
           case 3:
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));

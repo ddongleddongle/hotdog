@@ -116,7 +116,6 @@ class _ShopState extends State<Shop> {
         });
         switch (index) {
           case 0:
-<<<<<<< HEAD
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -145,7 +144,6 @@ class _ShopState extends State<Shop> {
                 builder: (context) => MyInfo(),
               ),
             );
-=======
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
@@ -161,7 +159,6 @@ class _ShopState extends State<Shop> {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
->>>>>>> 8126b3f22d907d32047783f3e66a46022397bdf7
         }
       },
     );
