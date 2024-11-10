@@ -29,6 +29,7 @@ class MapWiget extends StatefulWidget {
 }
 
 class MapSampleState extends State<MapWiget> {
+  //변수 설정
   CameraPosition? _currentCameraPosition;
   GoogleMapController? mapController;
   final startAddressController = TextEditingController();
@@ -45,27 +46,7 @@ class MapSampleState extends State<MapWiget> {
   List<LatLng> polylineCoordinates = [];
   Map<PolylineId, Polyline> polylines = {};
 
-  //선 긋기 연습
-  Map<PolylineId, Polyline> _polylines = {};
-
-  void _addPolyline() {
-    final PolylineId polylineId = PolylineId('polyline_id');
-    final Polyline polyline = Polyline(
-      polylineId: polylineId,
-      color: Colors.blue,
-      points: [
-        LatLng(35.263261, 129.016033),
-        LatLng(35.264331, 129.016484),
-        // Add more LatLng points for your polyline here
-      ],
-      width: 5,
-    );
-
-    setState(() {
-      _polylines[polylineId] = polyline;
-    });
-  } //
-
+  //권한요청
   _requestLocationPermission() async {
     var status = await Permission.location.status;
     if (!status.isGranted) {
@@ -80,12 +61,11 @@ class MapSampleState extends State<MapWiget> {
     }
     try {
       List<Placemark> p = await placemarkFromCoordinates(
-          _currentCameraPosition!.target.latitude,
-          _currentCameraPosition!.target.longitude);
+          _currentCameraPosition!.target.latitude, _currentCameraPosition!.target.longitude);
       Placemark place = p[0];
       setState(() {
         _currentAddress =
-            "${place.name}, ${place.locality}, ${place.postalCode}, ${place.country}";
+        "${place.name}, ${place.locality}, ${place.postalCode}, ${place.country}";
         startAddressController.text = _currentAddress;
         _startAddress = _currentAddress;
         _destinationAddress = _currentAddress;
@@ -98,8 +78,7 @@ class MapSampleState extends State<MapWiget> {
   _getAddressFromCoordinates(LatLng coordinates) async {
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(
-        coordinates.latitude,
-        coordinates.longitude,
+        coordinates.latitude, coordinates.longitude,
       );
       Placemark place = placemarks[0];
       return "${place.name}, ${place.locality}, ${place.postalCode}, ${place.country}";
@@ -112,8 +91,7 @@ class MapSampleState extends State<MapWiget> {
   _getCurrentLocation() async {
     await _requestLocationPermission();
     if (mapController != null) {
-      await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.high)
+      await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
           .then((Position position) async {
         setState(() {
           _currentCameraPosition = CameraPosition(
@@ -125,6 +103,9 @@ class MapSampleState extends State<MapWiget> {
           );
         });
         await _getAddress(); // 현재 위치 주소 가져오기
+        await _addMarkerOnTap(
+            LatLng(_currentCameraPosition!.target.latitude, _currentCameraPosition!.target.longitude)
+        );
       }).catchError((e) {
         print(e);
       });
@@ -167,22 +148,23 @@ class MapSampleState extends State<MapWiget> {
   }
 
   _createPolylines(
-    double startLatitude,
-    double startLongitude,
-    double destinationLatitude,
-    double destinationLongitude,
-  ) async {
+      double startLatitude,
+      double startLongitude,
+      double destinationLatitude,
+      double destinationLongitude,
+      ) async {
     // Initializing PolylinePoints
     polylinePoints = PolylinePoints();
+    polylineCoordinates = [];
 
     // drawing the polylines
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      googleApiKey: 'AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0', // Google Maps API Key
       request: PolylineRequest(
-          origin: PointLatLng(startLatitude, startLongitude),
-          destination: PointLatLng(destinationLatitude, destinationLongitude),
-          mode: TravelMode.transit),
-      googleApiKey:
-          'AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0', // Google Maps API Key
+        origin: PointLatLng(startLatitude, startLongitude),
+        destination: PointLatLng(destinationLatitude, destinationLongitude),
+        mode: TravelMode.transit,
+      ),
     );
 
     // Adding the coordinates to the list
@@ -190,21 +172,32 @@ class MapSampleState extends State<MapWiget> {
       result.points.forEach((PointLatLng point) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       });
+
+      // // 거리 정보 출력 (여기서는 result의 status가 OK일 때만 처리)
+      // if (result.status == 'OK' && result.legs.isNotEmpty) {
+      //   print("Distance: ${result.legs[0].distance.text}"); // 거리 출력
+      // } else {
+      //   print("No route found or invalid response");
+      // }
+
+      // Defining an ID
+      PolylineId id = PolylineId('poly');
+
+      // Initializing Polyline
+      Polyline polyline = Polyline(
+        polylineId: id,
+        color: Colors.red,
+        points: polylineCoordinates,
+        width: 3,
+      );
+
+      // Adding the polyline to the map
+      setState(() {
+        polylines[id] = polyline; // 폴리라인 상태 업데이트
+      });
+    } else {
+      print("No route found");
     }
-
-    // Defining an ID
-    PolylineId id = PolylineId('poly');
-
-    // Initializing Polyline
-    Polyline polyline = Polyline(
-      polylineId: id,
-      color: Colors.red,
-      points: polylineCoordinates,
-      width: 3,
-    );
-
-    // Adding the polyline to the map
-    polylines[id] = polyline;
   }
 
   _drawRoute() {
@@ -216,8 +209,10 @@ class MapSampleState extends State<MapWiget> {
     LatLng start = markers.first.position;
     LatLng end = markers.last.position;
 
-    _createPolylines(
-        start.latitude, start.longitude, end.latitude, end.longitude);
+    // 출발지와 목적지가 설정된 경우에만 경로를 그립니다.
+    if (_startMarker != null && _destinationMarker != null) {
+      _createPolylines(start.latitude, start.longitude, end.latitude, end.longitude);
+    }
   }
 
   @override
@@ -230,7 +225,7 @@ class MapSampleState extends State<MapWiget> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
-    CameraPosition _initialLocation = CameraPosition(target: LatLng(0.0, 0.0));
+    CameraPosition _initialLocation = CameraPosition(target: LatLng(129.0756416, 35.1795543));
 
     return Container(
       height: height,
@@ -248,14 +243,14 @@ class MapSampleState extends State<MapWiget> {
               onMapCreated: (GoogleMapController controller) {
                 mapController = controller;
                 _getCurrentLocation();
-                _addPolyline(); //선 긋기 연습
               },
-              polylines: Set<Polyline>.of(_polylines.values), //선 긋기 연습
               markers: markers,
+              polylines: Set<Polyline>.of(polylines.values),
               onTap: _addMarkerOnTap,
             ),
             Stack(
               children: [
+                //현위치 버튼
                 Align(
                   alignment: Alignment(0.9, 0.85),
                   child: ClipOval(
@@ -275,6 +270,7 @@ class MapSampleState extends State<MapWiget> {
                     ),
                   ),
                 ),
+                //줌아웃 버튼
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Column(
@@ -297,6 +293,7 @@ class MapSampleState extends State<MapWiget> {
                 ),
               ],
             ),
+            //출발지 입력지
             Positioned(
               top: 50,
               left: 20,
@@ -314,6 +311,7 @@ class MapSampleState extends State<MapWiget> {
                 ),
               ),
             ),
+            //목적지 입력지
             Positioned(
               top: 110,
               left: 20,
@@ -331,6 +329,7 @@ class MapSampleState extends State<MapWiget> {
                 ),
               ),
             ),
+            //출발지 버튼
             Positioned(
               top: 170,
               left: 20,
@@ -343,6 +342,7 @@ class MapSampleState extends State<MapWiget> {
                 child: Text("출발지 설정"),
               ),
             ),
+            //목적지 버튼
             Positioned(
               top: 170,
               right: 20,
@@ -355,12 +355,15 @@ class MapSampleState extends State<MapWiget> {
                 child: Text("목적지 설정"),
               ),
             ),
+            //경로 버튼
             Positioned(
               top: 230,
               left: 20,
               right: 20,
               child: ElevatedButton(
-                onPressed: _drawRoute,
+                onPressed: (){
+                  _drawRoute();
+                },
                 child: Text("경로"),
               ),
             ),

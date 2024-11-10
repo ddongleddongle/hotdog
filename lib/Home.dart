@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'Login.dart';
 import 'Shop/Shop.dart';
 import 'Start.dart';
 import 'Walking.dart';
-import 'package:intl/intl.dart'; // intl 패키지 import
+import 'package:intl/intl.dart';
+import 'MyInfo.dart';
+import 'User_Provider.dart';
 
 class Home extends StatefulWidget {
-  final String petName;
-  final String petBirthDay;
-  final int coins;
-
-  Home({
-    super.key,
-    required this.petName,
-    required this.petBirthDay,
-    required this.coins,
-  });
+  Home({Key? key}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -27,26 +21,28 @@ class _HomeState extends State<Home> {
   bool isLoggedIn = true;
 
   // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
-  String _formatBirthDate(String birthDate) {
+  String _formatBirthDate(String? birthDate) {
     // String을 DateTime으로 변환
-    if (birthDate == '0000') {
-      return birthDate;
+    if (birthDate == null || birthDate == '0000') {
+      return '로그인 하시옵소서';
     }
     DateTime date = DateTime.parse(birthDate);
-
     // 날짜 형식으로 포맷
     return DateFormat('yyyy-MM-dd').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
+    // UserProvider에서 로그인 정보를 가져옴
+    final user = Provider.of<UserProvider>(context);
+
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Container(
         color: Colors.white,
         child: Column(
           children: [
-            _buildProfileSection(),
+            _buildProfileSection(user), // UserProvider를 이용한 사용자 정보 표시
             Expanded(child: _buildGridButtons(context)),
             _buildWalkingButton(context),
           ],
@@ -71,7 +67,7 @@ class _HomeState extends State<Home> {
   }
 
   // 프로필 섹션 (로그인 상태에 따라 다르게 표시)
-  Widget _buildProfileSection() {
+  Widget _buildProfileSection(UserProvider user) {
     return Container(
       margin: EdgeInsets.fromLTRB(0, 30, 0, 30),
       padding: EdgeInsets.all(20),
@@ -88,14 +84,14 @@ class _HomeState extends State<Home> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 isLoggedIn
-                    ? _buildProfileText('이름: ${widget.petName}')
+                    ? _buildProfileText('이름: ${user.petName}')
                     : _buildProfileText('로그인 하세요'),
                 isLoggedIn
                     ? _buildProfileText(
-                        '생일: ${_formatBirthDate(widget.petBirthDay)}') // 생일 포맷 적용
+                    '생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 isLoggedIn
-                    ? _buildProfileText('보유 포인트: ${widget.coins}')
+                    ? _buildProfileText('보유 포인트: ${user.coins}')
                     : SizedBox(),
                 !isLoggedIn
                     ? _buildProfileText('로그인을 하여 정보를 확인하세요')
@@ -226,6 +222,8 @@ class _HomeState extends State<Home> {
         switch (index) {
           case 0:
             print('홈 선택됨');
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
             print('쇼핑 선택됨');
@@ -239,7 +237,8 @@ class _HomeState extends State<Home> {
             break;
           case 3:
             print('내정보 선택됨');
-            // 로직 아직 추가 안함
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
         }
       },

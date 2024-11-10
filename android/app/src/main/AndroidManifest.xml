@@ -13,8 +13,9 @@
         android:icon="@mipmap/ic_launcher">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0"
-            ></meta-data>
+            android:value="AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0">
+            <!--android:value="LEVZxYNEPV3nxJg5ljnVVtf3220" -->
+            </meta-data>
         <service
             android:name="MyNavigationService"
             android:foregroundServiceType="location" >
