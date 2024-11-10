@@ -7,6 +7,7 @@ import 'category_button.dart';
 import 'product_grid.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
 import 'ProductClass.dart'; // Product 모델을 임포트합니다.
+import '../Home.dart';
 import '../MyInfo.dart';
 
 class Shop extends StatefulWidget {
@@ -115,36 +116,6 @@ class _ShopState extends State<Shop> {
         });
         switch (index) {
           case 0:
-<<<<<<< HEAD
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Home(),
-              ),
-            );
-          case 1:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Shop(),
-              ),
-            );
-          case 2:
-            print('산책 선택됨');
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Walking(),
-              ),
-            );
-          case 3:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MyInfo(),
-              ),
-            );
-=======
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
@@ -160,7 +131,6 @@ class _ShopState extends State<Shop> {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
->>>>>>> 8126b3f22d907d32047783f3e66a46022397bdf7
         }
       },
     );
