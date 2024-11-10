@@ -8,6 +8,7 @@ import 'product_grid.dart';
 import '../Home.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
 import 'ProductClass.dart'; // Product 모델을 임포트합니다.
+import '../MyInfo.dart';
 
 class Shop extends StatefulWidget {
   const Shop({Key? key}) : super(key: key);
@@ -78,8 +79,12 @@ class _ShopState extends State<Shop> {
     );
   }
 
-  BottomNavigationBar _buildBottomNavigationBar(BuildContext context) {
+  int _currentIndex = 1;
+
+  BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      // 현재 선택된 인덱스
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -106,8 +111,12 @@ class _ShopState extends State<Shop> {
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
+        setState(() {
+          _currentIndex = index; // 인덱스 업데이트
+        });
         switch (index) {
           case 0:
+<<<<<<< HEAD
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -136,6 +145,23 @@ class _ShopState extends State<Shop> {
                 builder: (context) => MyInfo(),
               ),
             );
+=======
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Home()));
+            break;
+          case 1:
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Shop()));
+            break;
+          case 2:
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Walking()));
+            break;
+          case 3:
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => MyInfo()));
+            break;
+>>>>>>> 8126b3f22d907d32047783f3e66a46022397bdf7
         }
       },
     );

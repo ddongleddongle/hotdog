@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import '../ProductClass.dart';
 import 'nutrition_info.dart';
 import 'ingredients_carousel.dart';
 
 class ProductContent extends StatelessWidget {
-  const ProductContent({Key? key}) : super(key: key);
+  final ProductClass product; // 상품 정보를 받을 변수
+
+  const ProductContent({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +18,9 @@ class ProductContent extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'PRO PLAN',
-                style: TextStyle(
+              Text(
+                product.name, // 상품 이름 표시
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF32324D),
@@ -25,21 +28,21 @@ class ProductContent extends StatelessWidget {
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    '\$',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFFB080),
-                    ),
-                  ),
-                  Text(
-                    '10.00',
-                    style: TextStyle(
+                    product.price.toString(), // 가격 표시
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFFF7B2C),
+                    ),
+                  ),
+                  const Text(
+                    'won',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFFB080),
                     ),
                   ),
                 ],
@@ -47,9 +50,9 @@ class ProductContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            "You won't skip the most important meal of the day with this avocado toast recipe. Crispy, lacy eggs and creamy avocado top hot buttered toast.",
-            style: TextStyle(
+          Text(
+            product.description,
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Color(0xFF666687),

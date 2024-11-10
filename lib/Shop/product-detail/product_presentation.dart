@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import '../ProductClass.dart'; // Product 모델 import
 
 class ProductPresentation extends StatelessWidget {
-  const ProductPresentation({Key? key}) : super(key: key);
+  final ProductClass product; // 상품 정보를 받을 변수
+
+  const ProductPresentation({Key? key, required this.product})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +33,8 @@ class ProductPresentation extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.network(
-                  'https://cdn.builder.io/api/v1/image/assets/TEMP/8b5c3cbf447a60efa20bd527f6e07ee9ba60eeead2bd34939ad08101c24468c2?placeholderIfAbsent=true&apiKey=5a2bd66ac2224367918a8ced0d986eb2',
+                Image.asset(
+                  product.imageURL, // 로컬 이미지 경로 사용
                   width: 156,
                   fit: BoxFit.contain,
                 ),
@@ -51,16 +55,16 @@ class ProductPresentation extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        '★', // 채워진 별
+                        '★',
                         style: TextStyle(
-                          color: Colors.amber, // 별 색상
-                          fontSize: 12, // 별 크기
+                          color: Colors.amber,
+                          fontSize: 12,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Text(
-                        '4.0',
-                        style: TextStyle(
+                      Text(
+                        product.rating.toString(), // 상품의 평점 표시
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF8E8EA9),
