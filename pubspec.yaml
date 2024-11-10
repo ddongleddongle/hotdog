@@ -31,9 +31,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl: ^0.18.0
+  flutter_rating_bar: ^4.0.1
+  flutterflow_ui: ^0.3.1
+  pedometer: ^4.0.2
+  intl: ^0.19.0
   sqflite: ^2.4.1
   mysql_client: ^0.0.27
+  percent_indicator: ^4.2.3
   permission_handler: ^11.3.1
   shared_preferences: ^2.1.0
   provider: ^6.1.2
@@ -41,10 +45,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  google_maps_flutter: ^2.9.0
+  google_maps_flutter: ^2.7.1
   google_directions_api: ^0.10.0
   location: ^7.0.1
-  geolocator: ^13.0.1
+  geolocator: ^12.0.0
   geocoding: ^3.0.0
   json_serializable: ^6.8.0
   flutter_polyline_points: ^2.1.0

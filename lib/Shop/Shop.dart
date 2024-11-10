@@ -116,6 +116,34 @@ class _ShopState extends State<Shop> {
         });
         switch (index) {
           case 0:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Home(),
+              ),
+            );
+          case 1:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Shop(),
+              ),
+            );
+          case 2:
+            print('산책 선택됨');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Walking(),
+              ),
+            );
+          case 3:
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MyInfo(),
+              ),
+            );
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;

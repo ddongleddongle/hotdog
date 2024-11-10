@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'Login.dart';
 import 'Shop/Shop.dart';
-import 'Start.dart';
 import 'Walking.dart';
+import 'Start.dart';
 import 'package:intl/intl.dart';
 import 'MyInfo.dart';
 import 'User_Provider.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pedometer/pedometer.dart';
 import 'test.dart';
 
 class Home extends StatefulWidget {
@@ -18,37 +21,146 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool isLoggedIn = true;
+  int currentSteps = 0; // 초기 걸음 수
+  int stepGoal = 2660; // 목표 걸음 수
+  late SharedPreferences prefs;
+  String? _status = 'Idle';
 
-  // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
+  @override
+  void initState() {
+    super.initState();
+    _initPedometer(); // pedometer 초기화
+    _loadStepData(); // SharedPreferences에서 데이터 로드
+  }
+
+  _initPedometer() async {
+    Pedometer.stepCountStream.listen((stepCount) {
+      setState(() {
+        currentSteps = stepCount.steps; // StepCount 객체에서 실제 걸음 수 가져오기
+      });
+      _saveStepData(); // SharedPreferences에 저장
+    }, onError: (error) {
+      setState(() {
+        _status = 'Error: $error';
+      });
+    });
+  }
+
+  _resetSteps() async {
+    await prefs.setInt('currentSteps', 0);
+    setState(() {
+      currentSteps = 1000; // UI에서 값도 초기화
+    });
+  }
+
+  _loadStepData() async {
+    prefs = await SharedPreferences.getInstance();
+    String? lastDate = prefs.getString('lastDate');
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    if (lastDate == null || lastDate != today) {
+      currentSteps = 0;
+      prefs.setString('lastDate', today);
+    } else {
+      _resetSteps();
+      currentSteps = prefs.getInt('currentSteps') ?? 0;
+    }
+  }
+
+  _saveStepData() async {
+    await prefs.setInt('currentSteps', currentSteps);
+  }
+
   String _formatBirthDate(String? birthDate) {
-    // String을 DateTime으로 변환
     if (birthDate == null || birthDate == '0000') {
       return '로그인 하시옵소서';
     }
     DateTime date = DateTime.parse(birthDate);
-    // 날짜 형식으로 포맷
     return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  double _convertStepsToKm(int steps) {
+    double stepLength = 0.75;
+    double km = (steps * stepLength) / 1000;
+    return km;
   }
 
   @override
   Widget build(BuildContext context) {
-    // UserProvider에서 로그인 정보를 가져옴
     final user = Provider.of<UserProvider>(context);
+    double progress = currentSteps / stepGoal;
+    progress = progress > 1.0 ? 1.0 : progress;
+
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    double radius = screenWidth * 0.3;
+    double heightLimit = screenHeight * 0.3;
+    radius = radius > heightLimit ? heightLimit : radius;
 
     return Scaffold(
-      appBar: _buildAppBar(context),
-      body: Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            _buildProfileSection(user), // UserProvider를 이용한 사용자 정보 표시
-            Expanded(child: _buildGridButtons(context)),
-            _buildWalkingButton(context),
-          ],
+        appBar: _buildAppBar(context),
+        body: Container(
+          width: double.infinity, // 화면 너비에 맞추기
+          height: double.infinity, // 화면 높이에 맞추기
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('images/back.jpg'), // 배경 이미지 경로
+              fit: BoxFit.cover, // 이미지를 화면 크기에 맞게 조정 (확대/축소)
+            ),
+          ),
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 100),
+          //color: Colors.white,
+          child: Column(
+            children: [
+              _buildProfileSection(user),
+              Flexible(
+                flex: 2,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(24, 24, 24, 24),
+                    child: SingleChildScrollView(
+                      child: CircularPercentIndicator(
+                        circularStrokeCap:
+                            CircularStrokeCap.round, // 원 모양의 끝 처리
+                        percent: progress,
+                        radius: radius,
+                        lineWidth: 25,
+                        animation: true,
+                        animateFromLastPercent: true,
+                        progressColor: Colors.black,
+                        backgroundColor: Color(0xFFF1F4F8),
+                        center: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${_convertStepsToKm(currentSteps).toStringAsFixed(2)} km',
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '목표: ${(stepGoal * 0.75 / 1000).toStringAsFixed(2)} km',
+                              style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
-    );
+        bottomNavigationBar: Container(
+          child: _buildBottomNavigationBar(context),
+        ));
   }
 
   AppBar _buildAppBar(BuildContext context) {
@@ -61,33 +173,38 @@ class _HomeState extends State<Home> {
               context, MaterialPageRoute(builder: (context) => Home()));
         },
       ),
-      title: Text("Hot Dog", style: TextStyle(color: Colors.black)),
+      title: Text("Hot Dog",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
     );
   }
 
   // 프로필 섹션 (로그인 상태에 따라 다르게 표시)
   Widget _buildProfileSection(UserProvider user) {
     return Container(
-      margin: EdgeInsets.fromLTRB(0, 30, 0, 30),
-      padding: EdgeInsets.all(20),
+      // 화면 높이의 40%로 설정
+      margin: EdgeInsets.fromLTRB(20, 20, 10, 0), // 프로필 영역 상하 마진 줄임
+      padding: EdgeInsets.all(10), // 패딩 줄임
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 1,
-            child: Image.asset('assets/images/pet.png', fit: BoxFit.contain),
+          // 프로필 이미지 크기 줄이기
+          Container(
+            width: 110, // 이미지 너비 줄이기
+            height: 110, // 이미지 높이 줄이기
+            child: Image.asset('/images/pet.png', fit: BoxFit.cover),
           ),
+          SizedBox(width: 40), // 이미지와 텍스트 간 간격 조정
+          // 텍스트 영역
           Expanded(
-            flex: 2,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 isLoggedIn
                     ? _buildProfileText('이름: ${user.petName}')
                     : _buildProfileText('로그인 하세요'),
                 isLoggedIn
                     ? _buildProfileText(
-                    '생일: ${_formatBirthDate(user.petBirthDay)}')
+                        '생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 isLoggedIn
                     ? _buildProfileText('보유 포인트: ${user.coins}')
@@ -103,16 +220,15 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // 프로필 텍스트를 출력하는 위젯
   Widget _buildProfileText(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 2), // 텍스트 간 간격 좁힘
       child: Text(
         text,
-        textAlign: TextAlign.left,
+        textAlign: TextAlign.center,
         style: TextStyle(
           color: Color(0xFF62807D),
-          fontSize: 20,
+          fontSize: 16, // 폰트 크기 줄이기
           fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
         ),
@@ -120,86 +236,35 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildGridButtons(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(0, 35, 0, 0),
-      margin: const EdgeInsets.symmetric(horizontal: 32.0),
-      child: GridView.count(
-        crossAxisCount: 2,
-        crossAxisSpacing: 32,
-        mainAxisSpacing: 30,
-        childAspectRatio: 1.6,
-        children: [
-          _buildButton('산책 매칭', () => print('산책 매칭 버튼 클릭')),
-          _buildButton('임시 Login 페이지 망작', () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Login()));
-          }),
-          _buildButton('Shop', () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Shop()));
-          }),
-          _buildButton('네 번째 매칭', () => print('네 번째 매칭 버튼 클릭')),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWalkingButton(BuildContext context) {
-    final user = Provider.of<UserProvider>(context); // 유저 정보를 가져옵니다.
-
-    return Container(
-      padding: EdgeInsets.all(30),
-      margin: EdgeInsets.only(bottom: 60),
-      child: SizedBox(
-        height: 100,
-        width: double.infinity,
-        child: _buildButton('산책하러가기', () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => test(
-                // Test 페이지로 유저 정보를 전달
-                petName: user.petName,
-                coins: user.coins,
-                totaldistance: user.totaldistance,
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildButton(String label, VoidCallback onPressed) {
-    return Container(
-      decoration: ShapeDecoration(
-        color: Color(0xFFAAD5D1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: EdgeInsets.zero,
-        ),
-        onPressed: onPressed,
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 25,
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildButton(String label, VoidCallback onPressed) {
+  //   return Container(
+  //     decoration: ShapeDecoration(
+  //       color: Color(0xFFAAD5D1),
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(10),
+  //       ),
+  //     ),
+  //     child: ElevatedButton(
+  //       style: ElevatedButton.styleFrom(
+  //         backgroundColor: Colors.transparent,
+  //         shadowColor: Colors.transparent,
+  //         padding: EdgeInsets.zero,
+  //       ),
+  //       onPressed: onPressed,
+  //       child: Center(
+  //         child: Text(
+  //           label,
+  //           style: TextStyle(
+  //             color: Colors.white,
+  //             fontSize: 25,
+  //             fontFamily: 'Inter',
+  //             fontWeight: FontWeight.w700,
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   int _currentIndex = 0;
 
@@ -226,6 +291,7 @@ class _HomeState extends State<Home> {
           label: '내정보',
         ),
       ],
+
       backgroundColor: Color(0xFFAAD5D1),
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.black54,
