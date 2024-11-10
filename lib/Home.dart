@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'Login.dart';
 import 'Shop/Shop.dart';
 import 'Walking.dart';
 import 'Start.dart';
@@ -11,6 +11,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pedometer/pedometer.dart';
 
+
 class Home extends StatefulWidget {
   Home({Key? key}) : super(key: key);
 
@@ -20,7 +21,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool isLoggedIn = true;
-  int currentSteps = 0;  // 초기 걸음 수
+  int currentSteps = 1000;  // 초기 걸음 수
   int stepGoal = 2660;     // 목표 걸음 수
   late SharedPreferences prefs;
   String? _status = 'Idle';
@@ -29,9 +30,12 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _initPedometer();  // pedometer 초기화
-    _loadStepData();  // SharedPreferences에서 데이터 로드
+    _loadStepData();
+    //_checkPermissions();  // SharedPreferences에서 데이터 로드
   }
-
+  _checkPermissions() async {
+    PermissionStatus status = await Permission.activityRecognition.request();
+  }
   _initPedometer() async {
     Pedometer.stepCountStream.listen((stepCount) {
       setState(() {
@@ -45,12 +49,6 @@ class _HomeState extends State<Home> {
     });
   }
 
-  _resetSteps() async {
-    await prefs.setInt('currentSteps', 0);
-    setState(() {
-      currentSteps = 1000;  // UI에서 값도 초기화
-    });
-  }
 
   _loadStepData() async {
     prefs = await SharedPreferences.getInstance();
@@ -61,7 +59,7 @@ class _HomeState extends State<Home> {
       currentSteps = 0;
       prefs.setString('lastDate', today);
     } else {
-      _resetSteps();
+      //_resetSteps();
       currentSteps = prefs.getInt('currentSteps') ?? 0;
     }
   }
@@ -69,7 +67,12 @@ class _HomeState extends State<Home> {
   _saveStepData() async {
     await prefs.setInt('currentSteps', currentSteps);
   }
-
+  _resetSteps() async {
+    await prefs.setInt('currentSteps', 0);
+    setState(() {
+      currentSteps = 1000;  // UI에서 값도 초기화
+    });
+  }
   String _formatBirthDate(String? birthDate) {
     if (birthDate == null || birthDate == '0000') {
       return '로그인 하시옵소서';
@@ -99,7 +102,17 @@ class _HomeState extends State<Home> {
 
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Container(
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          // 좌우 스와이프 시 화면 전환
+          if (details.primaryVelocity! < 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Shop()),
+            );
+          } 
+        },
+      child: Container(
         width: double.infinity, // 화면 너비에 맞추기
         height: double.infinity, // 화면 높이에 맞추기
         decoration: BoxDecoration(
@@ -108,7 +121,7 @@ class _HomeState extends State<Home> {
             fit: BoxFit.cover,  // 이미지를 화면 크기에 맞게 조정 (확대/축소)
           ),
         ),
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 100),
+        //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
         //color: Colors.white,
         child: Column(
           children: [
@@ -156,6 +169,7 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
+      ),
       bottomNavigationBar: 
       Container(
         child:_buildBottomNavigationBar(context),)
@@ -169,7 +183,7 @@ class _HomeState extends State<Home> {
         icon: Icon(Icons.settings, color: Colors.black54),
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Home()));
+              context, MaterialPageRoute(builder: (context) => Start()));
         },
       ),
       title: Text("Hot Dog", style: TextStyle(fontWeight: FontWeight.bold ,color: Colors.black)),
@@ -264,13 +278,9 @@ class _HomeState extends State<Home> {
   //     ),
   //   );
   // }
-
-  int _currentIndex = 0;
-
+  
   BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      // 현재 선택된 인덱스
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -291,30 +301,31 @@ class _HomeState extends State<Home> {
       ],
       
       backgroundColor: Color(0xFFAAD5D1),
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.black54,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black54,
       type: BottomNavigationBarType.fixed,
       iconSize: 30,
       selectedFontSize: 16,
       unselectedFontSize: 14,
-      onTap: (index) {
-        setState(() {
-          _currentIndex = index; // 인덱스 업데이트
-        });
+      onTap: (index) {                  
         switch (index) {
           case 0:
+            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
+            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
+            print('산책 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
           case 3:
+            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;

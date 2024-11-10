@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/Walking.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:software/Walking.dart';
 import 'Home.dart';
 import 'Login.dart';
+import 'Shop/Shop.dart';
 import 'QnA.dart';
 import 'MyInfoModi.dart';
-import 'Shop/Shop.dart';
 import 'User_Provider.dart';
-import 'Walking.dart';
 
 class MyInfo extends StatefulWidget {
   @override
@@ -16,8 +15,7 @@ class MyInfo extends StatefulWidget {
 }
 
 class _MyInfoState extends State<MyInfo> {
-  final TextEditingController _passwordController =
-  TextEditingController(); // 비밀번호 입력 컨트롤러
+  final TextEditingController _passwordController = TextEditingController(); // 비밀번호 입력 컨트롤러
   bool _isPasswordCorrect = true; // 비밀번호 확인 여부
 
   // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
@@ -31,9 +29,17 @@ class _MyInfoState extends State<MyInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final user =
-    Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
-    return Scaffold(
+    final user = Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
+    return GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! > 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Walking()),
+            );
+          } 
+        },
+    child: Scaffold(
       appBar: _buildAppBar(context),
       body: Container(
         color: Colors.white,
@@ -47,6 +53,7 @@ class _MyInfoState extends State<MyInfo> {
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
+    ),
     );
   }
 
@@ -72,7 +79,7 @@ class _MyInfoState extends State<MyInfo> {
         children: [
           Expanded(
             flex: 1,
-            child: Image.asset('assets/images/pet.png', fit: BoxFit.contain),
+            child: Image.asset('images/pet.png', fit: BoxFit.contain),
           ),
           Expanded(
             flex: 2,
@@ -83,8 +90,7 @@ class _MyInfoState extends State<MyInfo> {
                     ? _buildProfileText('이름: ${user.petName}')
                     : _buildProfileText('로그인 하세요'),
                 user.petBirthDay != null
-                    ? _buildProfileText(
-                    '생일: ${_formatBirthDate(user.petBirthDay)}')
+                    ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 user.coins != 0
                     ? _buildProfileText('보유 포인트: ${user.coins}')
@@ -128,7 +134,7 @@ class _MyInfoState extends State<MyInfo> {
       child: SizedBox(
         width: double.infinity,
         height: 50,
-        child: _buildButton('Q&A', () => _navigateToQnA(context)),
+        child: _buildButton('QnA', () => _navigateToQnA(context)),
       ),
     );
   }
@@ -154,8 +160,7 @@ class _MyInfoState extends State<MyInfo> {
       builder: (context) {
         return AlertDialog(
           title: Text("비밀번호 확인"),
-          content: SingleChildScrollView(
-            // 키보드가 올라왔을 때 스크롤이 가능하도록 함
+          content: SingleChildScrollView( // 키보드가 올라왔을 때 스크롤이 가능하도록 함
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -172,10 +177,7 @@ class _MyInfoState extends State<MyInfo> {
               onPressed: () {
                 // 비밀번호 확인
                 final enteredPassword = _passwordController.text;
-                final correctPassword =
-                    Provider
-                        .of<UserProvider>(context, listen: false)
-                        .password;
+                final correctPassword = Provider.of<UserProvider>(context, listen: false).password;
 
                 if (enteredPassword == correctPassword) {
                   Navigator.of(context).pop(); // 다이얼로그 닫기
@@ -262,16 +264,12 @@ class _MyInfoState extends State<MyInfo> {
     );
   }
 
-  int _currentIndex = 3;
 
   BottomNavigationBar _buildBottomNavigationBar(context) {
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      // 현재 선택된 인덱스
+      currentIndex: 3,
       items: [
-
         BottomNavigationBarItem(
-
           icon: Icon(Icons.home),
           label: '홈',
         ),
@@ -288,44 +286,33 @@ class _MyInfoState extends State<MyInfo> {
           label: '내정보',
         ),
       ],
+      
       backgroundColor: Color(0xFFAAD5D1),
-      selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.black54,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.black54,
       type: BottomNavigationBarType.fixed,
       iconSize: 30,
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
-        setState(() {
-          _currentIndex = index; // 인덱스 업데이트
-        });
         switch (index) {
           case 0:
+            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Shop(),
-              ),
-            );
-          case 2:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Walking(),
-              ),
-            );
+            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
+            print('산책 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
           case 3:
+            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;

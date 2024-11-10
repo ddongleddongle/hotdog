@@ -5,8 +5,8 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'MyInfo.dart';
+import 'Shop/Shop.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,9 +18,27 @@ class Walking extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return 
+    GestureDetector(
+        onHorizontalDragEnd: (details) {
+          // 좌우 스와이프 시 화면 전환
+          if (details.primaryVelocity! < 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MyInfo()),
+            );
+          }
+          else if (details.primaryVelocity! > 0) {
+          // 우측 스와이프 -> MyInfo 화면으로 이동
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Shop()),
+            );
+          } 
+        }, child:MaterialApp(
       title: 'Flutter Google Map',
       home: MapWiget(),
+      ),
     );
   }
 }
@@ -32,7 +50,6 @@ class MapWiget extends StatefulWidget {
 
 class MapSampleState extends State<MapWiget> {
   //변수 설정
-  String APIKEY = 'AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0';
   CameraPosition? _currentCameraPosition;
   GoogleMapController? mapController;
   final startAddressController = TextEditingController();
@@ -44,18 +61,10 @@ class MapSampleState extends State<MapWiget> {
   Marker? selectedMarker;
   Marker? _startMarker;
   Marker? _destinationMarker;
-  bool searchstatus = true;
   bool isSettingStartAddress = true; // 출발지/목적지 설정 구분자
-  bool isRouteSearchActive = false; // 상단바 온 오프
-  bool isMarkerTapEnabled = true; // 마커 추가 기능 활성화 여부
-  bool hasStartText = false;
-  bool hasDestinationText = false;
   late PolylinePoints polylinePoints;
   List<LatLng> polylineCoordinates = [];
   Map<PolylineId, Polyline> polylines = {};
-  List<dynamic> suggestions = [];
-  List<dynamic> startSuggestions = []; // 출발지 제안 목록
-  List<dynamic> destinationSuggestions = []; // 목적지 제안 목록
 
   //권한요청
   _requestLocationPermission() async {
@@ -63,63 +72,6 @@ class MapSampleState extends State<MapWiget> {
     if (!status.isGranted) {
       await Permission.location.request();
     }
-  }
-
-  // Google Places API 호출
-  _fetchSuggestions(String query) async {
-    final apiKey = APIKEY; // 여기에 실제 API 키를 입력하세요.
-    final url =
-        'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$query&components=country:kr&key=$apiKey';
-
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      print(data);
-      setState(() {
-        if (searchstatus) {
-          startSuggestions = data['predictions'];
-          suggestions = startSuggestions;
-        } else {
-          destinationSuggestions = data['predictions'];
-          suggestions = destinationSuggestions;
-        }
-      });
-    } else {
-      throw Exception('Failed to load suggestions');
-    }
-  }
-
-  _fitCameraToPolyline(LatLng start, LatLng end) {
-    // LatLngBounds를 사용하여 경로를 포함하는 카메라 경계 생성
-    LatLngBounds bounds;
-    if (start.latitude > end.latitude && start.longitude > end.longitude) {
-      bounds = LatLngBounds(
-        southwest: end,
-        northeast: start,
-      );
-    } else if (start.latitude < end.latitude && start.longitude < end.longitude) {
-      bounds = LatLngBounds(
-        southwest: start,
-        northeast: end,
-      );
-    } else {
-      bounds = LatLngBounds(
-        southwest: LatLng(
-          start.latitude < end.latitude ? start.latitude : end.latitude,
-          start.longitude < end.longitude ? start.longitude : end.longitude,
-        ),
-        northeast: LatLng(
-          start.latitude > end.latitude ? start.latitude : end.latitude,
-          start.longitude > end.longitude ? start.longitude : end.longitude,
-        ),
-      );
-    }
-
-    // 카메라를 폴리라인에 맞게 애니메이션
-    mapController?.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 120), // 100은 여백
-    );
   }
 
   _getAddress() async {
@@ -171,10 +123,9 @@ class MapSampleState extends State<MapWiget> {
           );
         });
         await _getAddress(); // 현재 위치 주소 가져오기
-        if(isMarkerTapEnabled)
-          await _addMarkerOnTap(
-              LatLng(_currentCameraPosition!.target.latitude, _currentCameraPosition!.target.longitude)
-          );
+        await _addMarkerOnTap(
+            LatLng(_currentCameraPosition!.target.latitude, _currentCameraPosition!.target.longitude)
+        );
       }).catchError((e) {
         print(e);
       });
@@ -183,31 +134,12 @@ class MapSampleState extends State<MapWiget> {
     }
   }
 
-  _checkForPublicFacilities(LatLng location) async {
-    final url =
-        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${location.latitude},${location.longitude}&radius=300&type=public+facility&key=$APIKEY';
-
-    final response = await http.get(Uri.parse(url));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['results'].isNotEmpty; // 결과가 있으면 true 반환
-    } else {
-      print('Failed to load public facilities');
-      return false; // 실패 시 false 반환
-    }
-  }
-
   _addMarkerOnTap(LatLng tappedPoint) async {
-
     String address = await _getAddressFromCoordinates(tappedPoint);
-    bool hasPublicFacility = await _checkForPublicFacilities(tappedPoint);
-
     Marker marker = Marker(
       markerId: MarkerId(tappedPoint.toString()),
       position: tappedPoint,
       infoWindow: InfoWindow(
-        //title: hasPublicFacility?'공공시설' : (isSettingStartAddress ? '출발지' : '목적지'),
         title: isSettingStartAddress ? '출발지' : '목적지',
         snippet: address,
       ),
@@ -215,7 +147,6 @@ class MapSampleState extends State<MapWiget> {
     );
 
     setState(() {
-      polylines = {};
       // 설정하려는 위치에 맞는 마커를 설정하고 업데이트
       if (isSettingStartAddress) {
         _startMarker = marker;
@@ -236,23 +167,6 @@ class MapSampleState extends State<MapWiget> {
     });
   }
 
-  // 주소 선택 시 호출되는 함수
-  _onSuggestionSelected(String address) async {
-    // 주소를 좌표로 변환
-    List<Location> locations = await locationFromAddress(address);
-    LatLng selectedLatLng = LatLng(locations.first.latitude, locations.first.longitude);
-
-    // 마커 추가
-    await _addMarkerOnTap(selectedLatLng);
-
-    // 선택된 주소를 TextField에 설정
-    if (searchstatus) {
-      startAddressController.text = address;
-    } else {
-      destinationAddressController.text = address;
-    }
-  }
-
   _createPolylines(
       double startLatitude,
       double startLongitude,
@@ -270,7 +184,6 @@ class MapSampleState extends State<MapWiget> {
         origin: PointLatLng(startLatitude, startLongitude),
         destination: PointLatLng(destinationLatitude, destinationLongitude),
         mode: TravelMode.transit,
-        transitMode: 'bus',
       ),
     );
 
@@ -279,6 +192,13 @@ class MapSampleState extends State<MapWiget> {
       result.points.forEach((PointLatLng point) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       });
+
+      // // 거리 정보 출력 (여기서는 result의 status가 OK일 때만 처리)
+      // if (result.status == 'OK' && result.legs.isNotEmpty) {
+      //   print("Distance: ${result.legs[0].distance.text}"); // 거리 출력
+      // } else {
+      //   print("No route found or invalid response");
+      // }
 
       // Defining an ID
       PolylineId id = PolylineId('poly');
@@ -312,7 +232,6 @@ class MapSampleState extends State<MapWiget> {
     // 출발지와 목적지가 설정된 경우에만 경로를 그립니다.
     if (_startMarker != null && _destinationMarker != null) {
       _createPolylines(start.latitude, start.longitude, end.latitude, end.longitude);
-      _fitCameraToPolyline(start, end); // 카메라를 폴리라인에 맞춰 조정
     }
   }
 
@@ -320,18 +239,6 @@ class MapSampleState extends State<MapWiget> {
   void initState() {
     super.initState();
     _getCurrentLocation();
-    startAddressController.addListener(() {
-      setState(() {
-        hasStartText = startAddressController.text.isNotEmpty;
-        hasDestinationText = destinationAddressController.text.isNotEmpty;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    startAddressController.dispose(); // Controller 메모리 해제
-    super.dispose();
   }
 
   @override
@@ -359,218 +266,130 @@ class MapSampleState extends State<MapWiget> {
               },
               markers: markers,
               polylines: Set<Polyline>.of(polylines.values),
-              onTap: isMarkerTapEnabled ? _addMarkerOnTap : null,
+              onTap: _addMarkerOnTap,
             ),
-            // 현위치 버튼
-            Align(
-              alignment: Alignment(0.9, 0.85),
-              child: ClipOval(
-                child: Material(
-                  color: Colors.orange.shade100,
-                  child: InkWell(
-                    splashColor: Colors.orange,
-                    child: SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: Icon(Icons.my_location),
-                    ),
-                    onTap: () {
-                      _getCurrentLocation();
-                    },
-                  ),
-                ),
-              ),
-            ),
-            // 줌 아웃 버튼
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: () => mapController!.animateCamera(
-                      CameraUpdate.zoomIn(),
-                    ),
-                    icon: Icon(Icons.add, size: 50),
-                  ),
-                  IconButton(
-                    onPressed: () => mapController!.animateCamera(
-                      CameraUpdate.zoomOut(),
-                    ),
-                    icon: Icon(Icons.remove_outlined, size: 50),
-                  ),
-                ],
-              ),
-            ),
-            // 출발지 입력지
-            if (!isRouteSearchActive)
-              Positioned(
-                top: 50,
-                left: 20,
-                right: 20,
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: startAddressController,
-                      onChanged: (value) {
-                        searchstatus = true;
-                        _fetchSuggestions(value);
-                      },
-                      decoration: InputDecoration(
-                        hintText: "출발지 입력",
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
+            Stack(
+              children: [
+                //현위치 버튼
+                Align(
+                  alignment: Alignment(0.9, 0.85),
+                  child: ClipOval(
+                    child: Material(
+                      color: Colors.orange.shade100,
+                      child: InkWell(
+                        splashColor: Colors.orange,
+                        child: SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: Icon(Icons.my_location),
                         ),
-                        suffixIcon: IconButton(
-                          icon: Icon(Icons.clear), // x 버튼 아이콘
-                          onPressed: () {
-                            // 텍스트 필드 내용 지우기
-                            startAddressController.clear();
-                            setState(() {
-                              // 필요 시 상태 업데이트
-                            });
-                          },
-                        ),
+                        onTap: () {
+                          _getCurrentLocation();
+                        },
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            // 목적지 입력지
-            if (!isRouteSearchActive)
-              Positioned(
-                top: 110,
-                left: 20,
-                right: 20,
-                child: TextField(
-                  controller: destinationAddressController,
-                  onChanged: (value) {
-                    searchstatus = false;
-                    _fetchSuggestions(value);
-                  },
-                  decoration: InputDecoration(
-                    hintText: "목적지 입력",
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(Icons.clear), // x 버튼 아이콘
-                      onPressed: () {
-                        // 텍스트 필드 내용 지우기
-                        destinationAddressController.clear();
-                        setState(() {
-                          // 필요 시 상태 업데이트
-                        });
-                      },
-                    ),
+                //줌아웃 버튼
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () => mapController!.animateCamera(
+                          CameraUpdate.zoomIn(),
+                        ),
+                        icon: Icon(Icons.add, size: 50),
+                      ),
+                      IconButton(
+                        onPressed: () => mapController!.animateCamera(
+                          CameraUpdate.zoomOut(),
+                        ),
+                        icon: Icon(Icons.remove_outlined, size: 50),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            //출발지 입력지
+            Positioned(
+              top: 50,
+              left: 20,
+              right: 20,
+              child: TextField(
+                controller: startAddressController,
+                decoration: InputDecoration(
+                  hintText: "출발지 입력",
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
-            // 출발지 설정 버튼
-            if (!isRouteSearchActive)
-              Positioned(
-                top: 170,
-                left: 20,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      isSettingStartAddress = true;
-                    });
-                  },
-                  child: Text("출발지 설정"),
-                ),
-              ),
-            // 목적지 설정 버튼
-            if (!isRouteSearchActive)
-              Positioned(
-                top: 170,
-                right: 20,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      isSettingStartAddress = false;
-                    });
-                  },
-                  child: Text("목적지 설정"),
-                ),
-              ),
-            // 경로 버튼
-            if (!isRouteSearchActive)
-              Positioned(
-                top: 230,
-                left: 20,
-                right: 20,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _drawRoute();
-                    setState(() {
-                      isRouteSearchActive = true; // 경로 검색 활성화
-                      isMarkerTapEnabled = false;
-                    });
-                  },
-                  child: Text("경로"),
-                ),
-              ),
-            // 경로 검색 취소 버튼
-            if (isRouteSearchActive)
-              Positioned(
-                top: 50,
-                left: 20,
-                right: 20,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      isRouteSearchActive = false; // 경로 검색 비활성화
-                      isMarkerTapEnabled = true;
-                    });
-                  },
-                  child: Text("경로 검색 취소"),
-                ),
-              ),
-            // 자동완성 제안 목록 표시 (가장 위에 위치)
-            if (suggestions.isNotEmpty)
-              Positioned(
-                top : searchstatus ? 110 : 170, // TextField 바로 아래에 위치
-                left: 20,
-                right: 20,
-                child: Container(
-                  height: 200, // 제안 목록의 높이
-                  decoration: BoxDecoration(
-                    color: Colors.white, // 배경색
-                    border: Border.all(color: Colors.black), // 검정색 테두리
-                    borderRadius: BorderRadius.circular(10), // 모서리 둥글게
-                  ),
-                  child: ListView.builder(
-                    itemCount: suggestions.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(suggestions[index]['description']),
-                        onTap: () {
-                          _onSuggestionSelected(suggestions[index]['description']); // 주소 선택 시 호출
-                          if (searchstatus) {
-                            startAddressController.text = suggestions[index]['description'];
-                          } else {
-                            destinationAddressController.text = suggestions[index]['description'];
-                          }
-                          setState(() {
-                            suggestions = []; // 선택 후 제안 목록 초기화
-                          });
-                        },
-                      );
-                    },
+            ),
+            //목적지 입력지
+            Positioned(
+              top: 110,
+              left: 20,
+              right: 20,
+              child: TextField(
+                controller: destinationAddressController,
+                decoration: InputDecoration(
+                  hintText: "목적지 입력",
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
+            ),
+            //출발지 버튼
+            Positioned(
+              top: 170,
+              left: 20,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isSettingStartAddress = true;
+                  });
+                },
+                child: Text("출발지 설정"),
+              ),
+            ),
+            //목적지 버튼
+            Positioned(
+              top: 170,
+              right: 20,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isSettingStartAddress = false;
+                  });
+                },
+                child: Text("목적지 설정"),
+              ),
+            ),
+            //경로 버튼
+            Positioned(
+              top: 230,
+              left: 20,
+              right: 20,
+              child: ElevatedButton(
+                onPressed: (){
+                  _drawRoute();
+                },
+                child: Text("경로"),
+              ),
+            ),
           ],
         ),
       ),
     );
-
   }
 }
