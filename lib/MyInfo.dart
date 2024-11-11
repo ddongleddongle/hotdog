@@ -36,7 +36,18 @@ class _MyInfoState extends State<MyInfo> {
         Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Container(
+      body:
+    GestureDetector(
+    onHorizontalDragEnd: (details) {
+    // 좌우 스와이프 시 화면 전환
+    if (details.primaryVelocity! < 0) {
+    Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => Walking()),
+    );
+    }
+    },
+    child:Container(
         color: Colors.white,
         child: Column(
           children: [
@@ -47,6 +58,7 @@ class _MyInfoState extends State<MyInfo> {
           ],
         ),
       ),
+    ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
@@ -261,11 +273,10 @@ class _MyInfoState extends State<MyInfo> {
     );
   }
 
-  int _currentIndex = 3;
-
   BottomNavigationBar _buildBottomNavigationBar(context) {
     final user = Provider.of<UserProvider>(context);
     return BottomNavigationBar(
+      currentIndex: 3,
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -278,10 +289,6 @@ class _MyInfoState extends State<MyInfo> {
         BottomNavigationBarItem(
           icon: Icon(Icons.pets),
           label: '산책',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map),
-          label: '산책경로',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
@@ -312,20 +319,10 @@ class _MyInfoState extends State<MyInfo> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => test(
-// Test 페이지로 유저 정보를 전달
-                    petName: user.petName,
-                    coins: user.coins,
-                    totaldistance: user.totaldistance,
-                  ),
+                  builder: (context) => Walking(),
                 ));
             break;
           case 3:
-            print('산책경로 선택됨');
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Walking()));
-            break;
-          case 4:
             print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));

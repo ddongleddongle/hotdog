@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -9,11 +10,13 @@ class test extends StatefulWidget {
   final String? petName;
   final int? coins;
   final double? totaldistance;
+  final LatLng? desitinationPosition;
 
   test({
     required this.petName,
     required this.coins,
     required this.totaldistance,
+    required this.desitinationPosition,
   });
 
   @override
@@ -22,9 +25,12 @@ class test extends StatefulWidget {
 
 class _MapScreenState extends State<test> {
   late GoogleMapController mapController;
-  LatLng _currentPosition = LatLng(35.2191, 129.0102);
+  LatLng? _currentPosition;
   Set<Marker> _markers = {};
   List<LatLng> _routePoints = []; // 경로 포인트를 저장할 리스트
+  List<LatLng> polylineCoordinates = [];
+  late PolylinePoints polylinePoints;
+  Map<PolylineId, Polyline> polylines = {};
   Polyline _polyline = Polyline(
     polylineId: PolylineId('route'),
     color: Color(0xFFAAD5D1),
@@ -37,66 +43,117 @@ class _MapScreenState extends State<test> {
   Timer? _timer; // 타이머
   int _secondsElapsed = 0; // 경과 시간
 
+  _createPolylines(
+      double startLatitude,
+      double startLongitude,
+      double destinationLatitude,
+      double destinationLongitude,
+      ) async {
+    // Initializing PolylinePoints
+    polylinePoints = PolylinePoints();
+    polylineCoordinates = [];
+
+    // drawing the polylines
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      googleApiKey: 'AIzaSyDenPclJquav9-fQFtHsjnSIvMN1ORoOq0', // Google Maps API Key
+      request: PolylineRequest(
+        origin: PointLatLng(startLatitude, startLongitude),
+        destination: PointLatLng(destinationLatitude, destinationLongitude),
+        mode: TravelMode.transit,
+        transitMode: 'bus',
+      ),
+    );
+
+    // Adding the coordinates to the list
+    if (result.points.isNotEmpty) {
+      result.points.forEach((PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+
+      // Defining an ID
+      PolylineId id = PolylineId('poly');
+
+      // Initializing Polyline
+      Polyline polyline = Polyline(
+        polylineId: id,
+        color: Colors.grey,
+        points: polylineCoordinates,
+        width: 3,
+      );
+
+      // Adding the polyline to the map
+      setState(() {
+        polylines[id] = polyline; // 폴리라인 상태 업데이트
+      });
+    } else {
+      print("No route found");
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
     _startLocationStream();
   }
 
-  void _startLocationStream() {
-    final LocationSettings locationSettings = LocationSettings(
+  void _startLocationStream() async{
+    final LocationSettings locationSettings =  await LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 3, // 3미터마다 위치 업데이트
     );
 
-    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-      (Position position) {
-        if (position != null) {
-          setState(() {
-            _currentPosition = LatLng(position.latitude, position.longitude);
-            _markers.add(Marker(
-              markerId: MarkerId('currentLocation'),
-              position: _currentPosition,
-            ));
+    setState(() async{
+      await Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+            (Position position) {
+          if (position != null) {
+            setState(() {
+              _currentPosition = LatLng(position.latitude, position.longitude);
+              _markers.add(Marker(
+                markerId: MarkerId('currentLocation'),
+                position: _currentPosition!,
+              ));
 
-            // 산책 중이고 일시 정지 상태가 아닐 때만 경로 포인트 추가
-            if (_isWalking && !_isPaused) {
-              _routePoints.add(_currentPosition);
+              // 산책 중이고 일시 정지 상태가 아닐 때만 경로 포인트 추가
+              if (_isWalking && !_isPaused) {
+                _routePoints.add(_currentPosition!);
 
-              // 새로운 Polyline 객체 생성
-              _polyline = Polyline(
-                polylineId: PolylineId('route'),
-                color: Color(0xFFAAD5D1),
-                width: 5,
-                points: _routePoints, // 경로 업데이트
-              );
-
-              // 총 거리 계산
-              if (_routePoints.length > 1) {
-                _totalDistance += Geolocator.distanceBetween(
-                  _routePoints[_routePoints.length - 2].latitude,
-                  _routePoints[_routePoints.length - 2].longitude,
-                  _currentPosition.latitude,
-                  _currentPosition.longitude,
+                // 새로운 Polyline 객체 생성
+                _polyline = Polyline(
+                  polylineId: PolylineId('route'),
+                  color: Color(0xFFAAD5D1),
+                  width: 5,
+                  points: _routePoints, // 경로 업데이트
                 );
-              }
-            }
-          });
 
-          // 카메라를 현재 위치로 이동
-          mapController.animateCamera(CameraUpdate.newCameraPosition(
-            CameraPosition(target: _currentPosition, zoom: 17), // 확대된 줌 값
-          ));
-        }
-      },
-    );
+                // 총 거리 계산
+                if (_routePoints.length > 1) {
+                  _totalDistance += Geolocator.distanceBetween(
+                    _routePoints[_routePoints.length - 2].latitude,
+                    _routePoints[_routePoints.length - 2].longitude,
+                    _currentPosition!.latitude,
+                    _currentPosition!.longitude,
+                  );
+                }
+              }
+            });
+
+            // 카메라를 현재 위치로 이동
+            mapController.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(target: _currentPosition!, zoom: 17), // 확대된 줌 값
+            ));
+          }
+        },
+      );
+    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
     mapController.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(target: _currentPosition, zoom: 17), // 확대된 줌 값
+      CameraPosition(target: _currentPosition!, zoom: 17), // 확대된 줌 값
     ));
+    _createPolylines(_currentPosition!.latitude,_currentPosition!.longitude,widget.desitinationPosition!.latitude,widget.desitinationPosition!.longitude);
   }
 
   void _startWalking() {
@@ -138,15 +195,15 @@ class _MapScreenState extends State<test> {
           title: Text('산책 종료'),
           content: Text(
             '경과 시간: ${_secondsElapsed ~/ 60}:${_secondsElapsed % 60 < 10 ? '0' : ''}${_secondsElapsed % 60}\n'
-            '거리: ${_totalDistance.toStringAsFixed(2)} m\n'
-            '획득한 코인: $earnedCoins',
+                '거리: ${_totalDistance.toStringAsFixed(2)} m\n'
+                '획득한 코인: $earnedCoins',
           ),
           actions: [
             TextButton(
               onPressed: () async {
                 // UserProvider를 통해 업데이트
                 final userProvider =
-                    Provider.of<UserProvider>(context, listen: false);
+                Provider.of<UserProvider>(context, listen: false);
                 double newTotalDistance =
                     (userProvider.totaldistance ?? 0.0) + _totalDistance;
                 await userProvider.updateUserCoinsAndDistance(
@@ -203,17 +260,19 @@ class _MapScreenState extends State<test> {
           ),
         ),
       ),
-      body: Column(
+      body: _currentPosition == null
+          ? Center(child: CircularProgressIndicator()) // 위치가 null일 경우 로딩 인디케이터 표시
+          : Column(
         children: [
           Expanded(
             child: GoogleMap(
               onMapCreated: _onMapCreated,
               initialCameraPosition: CameraPosition(
-                target: _currentPosition,
+                target: _currentPosition!,
                 zoom: 17, // 확대된 줌 값
               ),
               markers: _markers,
-              polylines: {_polyline}, // 폴리라인 추가
+              polylines: Set<Polyline>.of(polylines.values).union({_polyline}),// 폴리라인 추가
             ),
           ),
           Column(
@@ -260,7 +319,7 @@ class _MapScreenState extends State<test> {
                             foregroundColor: Colors.white, // 텍스트 색상
                           ),
                           onPressed:
-                              _isWalking && !_isPaused ? _pauseWalking : null,
+                          _isWalking && !_isPaused ? _pauseWalking : null,
                           child: Text('멈춤'),
                         ),
                         ElevatedButton(

@@ -7,6 +7,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'User_Provider.dart';
+import 'test.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -336,6 +339,7 @@ class MapSampleState extends State<MapWiget> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context);
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
     CameraPosition _initialLocation = CameraPosition(target: LatLng(129.0756416, 35.1795543));
@@ -533,6 +537,26 @@ class MapSampleState extends State<MapWiget> {
                   child: Text("경로 검색 취소"),
                 ),
               ),
+            Positioned(
+              bottom: 50,
+              left: 20,
+              right: 20,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (context) => test(
+                              petName : user.petName,
+                              coins : user.coins,
+                              totaldistance : user.totaldistance,
+                              desitinationPosition : LatLng(_destinationMarker!.position.latitude, _destinationMarker!.position.longitude),
+                    )));
+                  });
+                },
+                child: Text("산책 시작"),
+              ),
+            ),
             // 자동완성 제안 목록 표시 (가장 위에 위치)
             if (suggestions.isNotEmpty)
               Positioned(

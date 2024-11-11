@@ -82,11 +82,10 @@ class _ShopState extends State<Shop> {
     );
   }
 
-  int _currentIndex = 1;
-
   BottomNavigationBar _buildBottomNavigationBar(context) {
     final user = Provider.of<UserProvider>(context);
     return BottomNavigationBar(
+      currentIndex: 1,
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -99,10 +98,6 @@ class _ShopState extends State<Shop> {
         BottomNavigationBarItem(
           icon: Icon(Icons.pets),
           label: '산책',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map),
-          label: '산책경로',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
@@ -133,20 +128,10 @@ class _ShopState extends State<Shop> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => test(
-// Test 페이지로 유저 정보를 전달
-                    petName: user.petName,
-                    coins: user.coins,
-                    totaldistance: user.totaldistance,
-                  ),
+                  builder: (context) => Walking(),
                 ));
             break;
           case 3:
-            print('산책경로 선택됨');
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Walking()));
-            break;
-          case 4:
             print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));

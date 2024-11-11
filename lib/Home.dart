@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 import 'Shop/Shop.dart';
 import 'Walking.dart';
 import 'test.dart';
 import 'Start.dart';
 import 'package:intl/intl.dart';
 import 'MyInfo.dart';
+import 'package:provider/provider.dart';
 import 'User_Provider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -93,6 +93,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context);
+
     double progress = currentSteps / stepGoal;
     progress = progress > 1.0 ? 1.0 : progress;
 
@@ -299,10 +300,6 @@ class _HomeState extends State<Home> {
           label: '산책',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.map),
-          label: '산책경로',
-        ),
-        BottomNavigationBarItem(
           icon: Icon(Icons.person),
           label: '내정보',
         ),
@@ -331,20 +328,10 @@ class _HomeState extends State<Home> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => test(
-// Test 페이지로 유저 정보를 전달
-                    petName: user.petName,
-                    coins: user.coins,
-                    totaldistance: user.totaldistance,
-                  ),
+                  builder: (context) => Walking(),
                 ));
             break;
           case 3:
-            print('산책경로 선택됨');
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Walking()));
-            break;
-          case 4:
             print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
