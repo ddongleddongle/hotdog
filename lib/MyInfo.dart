@@ -9,6 +9,7 @@ import 'MyInfoModi.dart';
 import 'Shop/Shop.dart';
 import 'User_Provider.dart';
 import 'Walking.dart';
+import 'test.dart';
 
 class MyInfo extends StatefulWidget {
   @override
@@ -263,9 +264,8 @@ class _MyInfoState extends State<MyInfo> {
   int _currentIndex = 3;
 
   BottomNavigationBar _buildBottomNavigationBar(context) {
+    final user = Provider.of<UserProvider>(context);
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      // 현재 선택된 인덱스
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -280,6 +280,10 @@ class _MyInfoState extends State<MyInfo> {
           label: '산책',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.map),
+          label: '산책경로',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.person),
           label: '내정보',
         ),
@@ -292,36 +296,37 @@ class _MyInfoState extends State<MyInfo> {
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
-        setState(() {
-          _currentIndex = index; // 인덱스 업데이트
-        });
         switch (index) {
           case 0:
+            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Shop(),
-              ),
-            );
-          case 2:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Walking(),
-              ),
-            );
+            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
+            print('산책 선택됨');
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => test(
+// Test 페이지로 유저 정보를 전달
+                    petName: user.petName,
+                    coins: user.coins,
+                    totaldistance: user.totaldistance,
+                  ),
+                ));
+            break;
+          case 3:
+            print('산책경로 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
-          case 3:
+          case 4:
+            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;

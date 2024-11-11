@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:software/MyInfo.dart';
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'welcome_header.dart';
 import 'category_button.dart';
 import 'product_grid.dart';
+import '../User_Provider.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
 import 'ProductClass.dart'; // Product 모델을 임포트합니다.
 import '../Home.dart';
 import '../MyInfo.dart';
+import '../test.dart';
 
 class Shop extends StatefulWidget {
   const Shop({Key? key}) : super(key: key);
@@ -82,9 +85,8 @@ class _ShopState extends State<Shop> {
   int _currentIndex = 1;
 
   BottomNavigationBar _buildBottomNavigationBar(context) {
+    final user = Provider.of<UserProvider>(context);
     return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      // 현재 선택된 인덱스
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -99,6 +101,10 @@ class _ShopState extends State<Shop> {
           label: '산책',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.map),
+          label: '산책경로',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.person),
           label: '내정보',
         ),
@@ -111,51 +117,37 @@ class _ShopState extends State<Shop> {
       selectedFontSize: 16,
       unselectedFontSize: 14,
       onTap: (index) {
-        setState(() {
-          _currentIndex = index; // 인덱스 업데이트
-        });
         switch (index) {
           case 0:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Home(),
-              ),
-            );
-          case 1:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Shop(),
-              ),
-            );
-          case 2:
-            print('산책 선택됨');
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Walking(),
-              ),
-            );
-          case 3:
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MyInfo(),
-              ),
-            );
+            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
+            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
+            print('산책 선택됨');
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => test(
+// Test 페이지로 유저 정보를 전달
+                    petName: user.petName,
+                    coins: user.coins,
+                    totaldistance: user.totaldistance,
+                  ),
+                ));
+            break;
+          case 3:
+            print('산책경로 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Walking()));
             break;
-          case 3:
+          case 4:
+            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
