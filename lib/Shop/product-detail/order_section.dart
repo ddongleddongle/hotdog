@@ -101,7 +101,7 @@ class _OrderSectionState extends State<OrderSection> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '\$$totalPrice', // 총 가격 표시
+                    '$totalPrice Won', // 총 가격 표시
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
