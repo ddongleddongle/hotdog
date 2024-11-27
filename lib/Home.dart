@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'MyInfo.dart';
 import 'package:provider/provider.dart';
 import 'User_Provider.dart';
+import 'Mapscreen.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pedometer/pedometer.dart';
@@ -133,9 +134,9 @@ class _HomeState extends State<Home> {
                 Flexible(
                   flex: 2,
                   child: Align(
-                    alignment: Alignment.center,
+                    alignment: Alignment.topCenter,
                     child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(24, 24, 24, 24),
+                      padding: EdgeInsetsDirectional.fromSTEB(24, 150, 24, 24),
                       child: SingleChildScrollView(
                         child: CircularPercentIndicator(
                           circularStrokeCap:
@@ -198,23 +199,36 @@ class _HomeState extends State<Home> {
   // 프로필 섹션 (로그인 상태에 따라 다르게 표시)
   Widget _buildProfileSection(UserProvider user) {
     return Container(
-      // 화면 높이의 40%로 설정
-      margin: EdgeInsets.fromLTRB(20, 20, 10, 0), // 프로필 영역 상하 마진 줄임
+      height: 150,
+      margin: EdgeInsets.fromLTRB(20, 50, 10, 0), // 프로필 영역 상하 마진 줄임
       padding: EdgeInsets.all(10), // 패딩 줄임
+      decoration: BoxDecoration(
+        color: Colors.white, // 배경 색상
+        borderRadius: BorderRadius.circular(10), // 모서리 둥글게
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1), // 그림자 색상
+            spreadRadius: 2, // 그림자 확산 정도
+            blurRadius: 5, // 흐림 정도
+            offset: Offset(0, 3), // 그림자 위치
+          ),
+        ],
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // 프로필 이미지 크기 줄이기
+          SizedBox(width: 25),
           Container(
             width: 110, // 이미지 너비 줄이기
             height: 110, // 이미지 높이 줄이기
             child: Image.asset('assets/images/pet.png', fit: BoxFit.cover),
           ),
-          SizedBox(width: 40), // 이미지와 텍스트 간 간격 조정
+          SizedBox(width: 60), // 이미지와 텍스트 간 간격 조정
           // 텍스트 영역
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 isLoggedIn
                     ? _buildProfileText('이름: ${user.petName}')
@@ -328,7 +342,7 @@ class _HomeState extends State<Home> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Walking(),
+                  builder: (context) => Mapscreen(),
                 ));
             break;
           case 3:
