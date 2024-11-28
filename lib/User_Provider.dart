@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:software/MapScreen.dart';
+import 'package:software/Mapscreen.dart';
 
 class UserProvider with ChangeNotifier {
   String? _email;
@@ -24,8 +24,9 @@ class UserProvider with ChangeNotifier {
   double? get lat => _lat;
   double? get lng => _lng;
 
+  //late MarkerInfo markerInfo;
   late List<LatLng> userPositions = []; // LatLng 객체를 저장할 리스트
-  late List<MarkerInfo> usermarkers = [];
+  late List<MarkerInfo> userMarkers = [];
 
   set coins(int? value) {
     _coins = value;
@@ -56,7 +57,7 @@ class UserProvider with ChangeNotifier {
   // 로그아웃 처리
   Future<void> logout() async {
 
-    final url = 'http://116.124.191.174:15017/update'; // 여기에 API 엔드포인트를 입력하세요
+    final url = 'http://116.124.191.174:15017/resetposition'; // 여기에 API 엔드포인트를 입력하세요
 
     try {
       final response = await http.post(
@@ -142,7 +143,6 @@ class UserProvider with ChangeNotifier {
     final url = 'http://116.124.191.174:15017/usersposition'; // API 엔드포인트
 
     try {
-      LatLng position;
       final response = await http.post(
         Uri.parse(url),
         headers: {
@@ -156,32 +156,34 @@ class UserProvider with ChangeNotifier {
 
         // 응답에서 lat, lng 값을 가져와서 LatLng 리스트에 추가
         userPositions.clear(); // 기존 리스트 초기화
-        usermarkers.clear();
+        userMarkers.clear();
         for (var item in data) {
           double? lat = item['lat'];
           double? lng = item['lng'];
-          position = LatLng(lat!, lng!);
+          String pet_name = item['pet_name'] ?? 'Unknown Pet';
 
-          // LatLng 객체를 리스트에 추가
+          // null 체크 후 LatLng 객체 생성
           if (lat != null && lng != null) {
-           userPositions.add(LatLng(lat, lng));
-           // 마커를 _markers에 추가
-           usermarkers.add(
-               MarkerInfo(
-                 title: 'User Position',
-                 description: 'User의 관한 내용입니다',
-                 position: position,
-               )
-           );
-          }
-          // Marker(
-          //   markerId: MarkerId(position.toString()),
-          //   position: position,
-          //   infoWindow: InfoWindow(title: 'User Position'),
-          // ),
+            LatLng position = LatLng(lat, lng);
 
+            // LatLng 객체를 리스트에 추가
+            userPositions.add(position);
+
+            // pet_name이 null이 아닐 경우에만 MarkerInfo 추가
+            if (pet_name != null) {
+              userMarkers.add(
+                MarkerInfo(
+                  title: pet_name,
+                  description: 'User의 관한 내용입니다',
+                  position: position,
+                ),
+              );
+            }
+          }
         }
         print(userPositions);
+        for(var a in userMarkers)
+          print('Title: ${a.title}, Position: ${a.position}, Description: ${a.description}');
       } else {
         throw Exception('Failed to fetch users position');
       }
