@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:software/MapScreen.dart';
 
 class UserProvider with ChangeNotifier {
   String? _email;
@@ -9,6 +11,8 @@ class UserProvider with ChangeNotifier {
   String? _petBirthDay;
   int? _coins;
   double? _totaldistance;
+  double? _lat;
+  double? _lng;
 
   // Getters
   String? get email => _email;
@@ -17,6 +21,11 @@ class UserProvider with ChangeNotifier {
   String? get petBirthDay => _petBirthDay;
   int? get coins => _coins;
   double? get totaldistance => _totaldistance;
+  double? get lat => _lat;
+  double? get lng => _lng;
+
+  late List<LatLng> userPositions = []; // LatLng 객체를 저장할 리스트
+  late List<MarkerInfo> usermarkers = [];
 
   set coins(int? value) {
     _coins = value;
@@ -32,27 +41,56 @@ class UserProvider with ChangeNotifier {
 
   // 로그인 처리
   Future<void> login(String email, String password, String petName,
-      String petBirthDay, int coins, double totaldistance) async {
+      String petBirthDay, int coins, double totaldistance, double? lat, double? lng) async {
     _email = email;
     _password = password;
     _petName = petName;
     _petBirthDay = petBirthDay;
     _coins = coins;
     _totaldistance = totaldistance;
+    _lat = lat;
+    _lng = lng;
     notifyListeners(); // 로그인 상태 변경
   }
 
   // 로그아웃 처리
   Future<void> logout() async {
+
+    final url = 'http://116.124.191.174:15017/update'; // 여기에 API 엔드포인트를 입력하세요
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': _email,
+          'lat': null, // 사용자의 이메일 또는 ID로 식별
+          'lng': null,
+        }),
+      );
+      if (response.statusCode == 200) {
+        notifyListeners(); // 상태 변경 통지
+      } else {
+        throw Exception('Failed to update user data');
+      }
+    }catch (error) {
+      throw error; // 에러 처리
+    }
+
     _email = null;
     _password = null;
     _petName = null;
     _petBirthDay = null;
     _coins = null;
     _totaldistance = null;
-    notifyListeners(); // 로그아웃 상태 변경
-  }
+    _lat = null;
+    _lng = null;
 
+    notifyListeners(); // 로그아웃 상태 변경
+
+  }
   // 사용자 정보 업데이트
   void updateUserInfo(
       String email, String password, String petName, String petBirthDay) {
@@ -87,6 +125,95 @@ class UserProvider with ChangeNotifier {
         notifyListeners(); // 상태 변경 통지
       } else {
         throw Exception('Failed to update user data');
+      }
+    } catch (error) {
+      throw error; // 에러 처리
+    }
+  }
+
+  Future<void> getPosition(double? lat, double? lng) async {
+    _lat = lat;
+    _lng = lng;
+    notifyListeners(); // 상태 변경 통지
+  }
+
+  //위치 정보 획득
+  Future<void> fetchUsersPosition() async {
+    final url = 'http://116.124.191.174:15017/usersposition'; // API 엔드포인트
+
+    try {
+      LatLng position;
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'email': _email}),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+
+        // 응답에서 lat, lng 값을 가져와서 LatLng 리스트에 추가
+        userPositions.clear(); // 기존 리스트 초기화
+        usermarkers.clear();
+        for (var item in data) {
+          double? lat = item['lat'];
+          double? lng = item['lng'];
+          position = LatLng(lat!, lng!);
+
+          // LatLng 객체를 리스트에 추가
+          if (lat != null && lng != null) {
+           userPositions.add(LatLng(lat, lng));
+           // 마커를 _markers에 추가
+           usermarkers.add(
+               MarkerInfo(
+                 title: 'User Position',
+                 description: 'User의 관한 내용입니다',
+                 position: position,
+               )
+           );
+          }
+          // Marker(
+          //   markerId: MarkerId(position.toString()),
+          //   position: position,
+          //   infoWindow: InfoWindow(title: 'User Position'),
+          // ),
+
+        }
+        print(userPositions);
+      } else {
+        throw Exception('Failed to fetch users position');
+      }
+    } catch (error) {
+      print('Error fetching users position: $error');
+    }
+  }
+
+  //위치 정보 처리
+  Future<void> updatePosition(double? lat, double? lng) async {
+    final url = 'http://116.124.191.174:15017/position'; // 여기에 API 엔드포인트를 입력하세요
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': _email,
+          'lat': lat,
+          'lng': lng,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        _lat = lat;
+        _lng = lng; // 업데이트된 좌표 저장
+        // 서버 응답 처리
+        notifyListeners(); // 상태 변경 통지
+      } else {
+        throw Exception('Failed to update position data');
       }
     } catch (error) {
       throw error; // 에러 처리

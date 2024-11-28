@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'Shop/Shop.dart';
 import 'Walking.dart';
@@ -24,6 +25,8 @@ class _HomeState extends State<Home> {
   bool isLoggedIn = true;
   int currentSteps = 1000; // 초기 걸음 수
   int stepGoal = 2660; // 목표 걸음 수
+  double? lat;
+  double? lng;
   late SharedPreferences prefs;
   String? _status = 'Idle';
 
@@ -31,12 +34,41 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _initPedometer(); // pedometer 초기화
+    _requestLocationPermission();
     _loadStepData();
     //_checkPermissions();  // SharedPreferences에서 데이터 로드
   }
 
   _checkPermissions() async {
     PermissionStatus status = await Permission.activityRecognition.request();
+  }
+
+  //권한요청
+  _requestLocationPermission() async {
+    var status = await Permission.location.status;
+    if (!status.isGranted) {
+      await Permission.location.request();
+    }
+  }
+
+  Future<void> _updatePosition() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+      // 위치 정보를 업데이트하기 전에 setState를 호출
+      setState(() {
+        lat = position.latitude;
+        lng = position.longitude;
+        print('Latitude: $lat, Longitude: $lng'); // 문자열 보간을 사용하여 출력
+      });
+
+      // UI 업데이트 후 비동기 작업 수행
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      await userProvider.updatePosition(lat, lng);
+
+    } catch (e) {
+      print('Error occurred while fetching location: $e');
+    }
   }
 
   _initPedometer() async {
@@ -341,8 +373,7 @@ class _HomeState extends State<Home> {
             print('산책 선택됨');
             Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => Mapscreen(),
+                MaterialPageRoute(builder: (context) => MapScreen(),
                 ));
             break;
           case 3:
