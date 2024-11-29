@@ -14,11 +14,13 @@ class MarkerInfo {
   late String title;
   late String description;
   late LatLng position;
+  late bool visible;
 
   MarkerInfo({
     required this.title,
     required this.description,
     required this.position,
+    required this.visible,
   });
 }
 
@@ -26,7 +28,6 @@ class _MapScreenState extends State<MapScreen> {
 
   late GoogleMapController mapController;
   bool _isLoading = true;
-  bool _party = false;
   Timer? positionTimer;
   Timer? movementTimer;
   LatLng? _currentPosition; // 기본 위치
@@ -40,11 +41,13 @@ class _MapScreenState extends State<MapScreen> {
       title: '장소 1',
       description: '장소 1의 설명입니다.',
       position: LatLng(35.2191, 129.0102),
+      visible: true,
     ),
     MarkerInfo(
       title: '장소 2',
       description: '장소 2의 설명입니다.',
       position: LatLng(35.2200, 129.0150),
+      visible: true,
     ),
   ];
 
@@ -82,11 +85,6 @@ class _MapScreenState extends State<MapScreen> {
       setState(() {
         _currentPosition =
             LatLng(position.latitude, position.longitude); // 현재 위치 설정
-        _markers.add(Marker(
-          markerId: MarkerId('currentLocation'),
-          position: _currentPosition!,
-          infoWindow: InfoWindow(title: '현재 위치'),
-        ));
         //_checkProximityToMarkers();    실제는 여기서 장소에 접근했는지 확인
       });
       mapController.animateCamera(CameraUpdate.newCameraPosition(
@@ -97,12 +95,12 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _onMarkerTapped(MarkerInfo markerInfo) {
-    _checkProximityToMarkers(markerInfo); // 마커와의 거리 체크
+  void _onMarkerTapped(MarkerInfo markerInfo, bool _party) {
+    //_checkProximityToMarkers(markerInfo); // 마커와의 거리 체크
     _showMarkerInfo(markerInfo, _party); // 마커 정보를 보여주며 party 상태 전달
   }
 
-  void _checkProximityToMarkers(MarkerInfo markerInfo) {
+  Future<bool> _checkProximityToMarkers(MarkerInfo markerInfo) async {
     double distance = Geolocator.distanceBetween(
       _currentPosition!.latitude,
       _currentPosition!.longitude,
@@ -110,7 +108,7 @@ class _MapScreenState extends State<MapScreen> {
       markerInfo.position.longitude,
     );
 
-    _party = distance <= 1000; // 파티 범위 이내면 true, 아니면 false
+    return distance <= 1000? true : false; // 파티 범위 이내면 true, 아니면 false
   }
 
   void _showMarkerInfo(MarkerInfo markerInfo, bool partyStatus) {
@@ -170,15 +168,19 @@ class _MapScreenState extends State<MapScreen> {
           return MarkerInfo(
             title: usermarker.title,
             description: usermarker.description,
+            visible: usermarker.visible,
             position: newPosition, // 새로운 위치로 변경
           );
         }).toList();
-
+        
+        //_getCurrentLocation(); 실제에서는 내 위치도 갱신
+        //__fetchUserPositions(); 실제에서는 _addMarkers() 없애고
         _addMarkers();
       });
     });
   }
 
+  //유저들 위치를 갱신하고 맵에 표시
   void _fetchUserPositions() async {
     // userProvider가 초기화된 후 데이터를 가져옴
     await userProvider?.fetchUsersPosition();
@@ -197,28 +199,42 @@ class _MapScreenState extends State<MapScreen> {
       // 아이콘 생성
       final BitmapDescriptor customIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(size: Size(82, 82)), // 아이콘 크기 설정
-        'assets/images/public_office_icon.png',       // 이미지 경로
+        'assets/images/public_office_icon.png', // 이미지 경로
       );
 
-      // 구조물 마커 추가(파란색)
+      // 현재 위치 마커
+      _markers.add(Marker(
+        markerId: MarkerId('currentLocation'),
+        position: _currentPosition!,
+        infoWindow: InfoWindow(title: '현재 위치'),
+      ));
+
+      // 구조물 마커 (파란색)
       for (var markerInfo in _markerInfos) {
+
+        bool _party = await _checkProximityToMarkers(markerInfo);
         _markers.add(Marker(
           markerId: MarkerId(markerInfo.title),
           position: markerInfo.position,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
           onTap: () {
-            _onMarkerTapped(markerInfo);
+            _onMarkerTapped(markerInfo, _party);
           },
         ));
       }
-      //사용자(개 사진)
+
+      // 사용자 마커 (visible 동적 설정)
       for (var userMarker in _userMarkers) {
+        // 거리 계산
+        bool Visable = await _checkProximityToMarkers(userMarker);
+
         _markers.add(Marker(
           markerId: MarkerId(userMarker.title),
           position: userMarker.position,
-          icon: customIcon, // 파란색
+          visible: Visable, // 동적 가시성
+          icon: customIcon, // 커스텀 아이콘
           onTap: () {
-            _onMarkerTapped(userMarker);
+            _onMarkerTapped(userMarker,Visable);
           },
         ));
       }

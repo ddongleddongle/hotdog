@@ -176,6 +176,7 @@ class UserProvider with ChangeNotifier {
                   title: pet_name,
                   description: 'User의 관한 내용입니다',
                   position: position,
+                  visible: false,
                 ),
               );
             }
