@@ -27,14 +27,16 @@ class MarkerInfo {
 class _MapScreenState extends State<MapScreen> {
 
   late GoogleMapController mapController;
+  double visibleditance = 500;
   bool _isLoading = true;
   Timer? positionTimer;
   Timer? movementTimer;
   LatLng? _currentPosition; // 기본 위치
   Set<Marker> _markers = {};
+  Set<Circle> _circles = {}; // 가시 거리 원
   UserProvider? userProvider; // 초기화 이전에는 null 허용
-  List<LatLng> userPositions = []; // 사용자 위치 리스트 초기화
-  List<MarkerInfo> _userMarkers = []; //사용자 마커 리스트 초기화
+  List<LatLng> userPositions = []; // 사용자 위치 리스트
+  List<MarkerInfo> _userMarkers = []; //사용자 마커 리스트
 
   List<MarkerInfo> _markerInfos = [
     MarkerInfo(
@@ -82,16 +84,35 @@ class _MapScreenState extends State<MapScreen> {
     try {
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
+
       setState(() {
         _currentPosition =
             LatLng(position.latitude, position.longitude); // 현재 위치 설정
         //_checkProximityToMarkers();    실제는 여기서 장소에 접근했는지 확인
       });
+
+      _circles.clear();
+      _addCircle();
       mapController.animateCamera(CameraUpdate.newCameraPosition(
         CameraPosition(target: _currentPosition!, zoom: 17),
       ));
     } catch (e) {
       print(e); // 오류 처리
+    }
+  }
+
+  Future<void> _addCircle() async {
+    // 현재 위치가 설정된 경우 원을 추가
+    if (_currentPosition != null) {
+      _circles.add(Circle(
+        circleId: CircleId('currentRadius'),
+        center: _currentPosition!,
+        radius: visibleditance/2,
+        fillColor: Colors.blue.withOpacity(0.1), // 투명한 파란색
+        strokeColor: Colors.blue, // 외곽선 파란색
+        strokeWidth: 1, // 외곽선 두께
+      ));
+      setState(() {}); // 변경사항 반영
     }
   }
 
@@ -108,7 +129,7 @@ class _MapScreenState extends State<MapScreen> {
       markerInfo.position.longitude,
     );
 
-    return distance <= 1000? true : false; // 파티 범위 이내면 true, 아니면 false
+    return distance <= visibleditance? true : false; // 파티 범위 이내면 true, 아니면 false
   }
 
   void _showMarkerInfo(MarkerInfo markerInfo, bool partyStatus) {
@@ -250,6 +271,7 @@ class _MapScreenState extends State<MapScreen> {
     mapController.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: _currentPosition!, zoom: 17),
     ));
+    _addCircle();
     //유저 정보 업데이트
     userProvider?.updatePosition(_currentPosition!.latitude, _currentPosition!.longitude);
     _fetchUserPositions();
@@ -272,6 +294,7 @@ class _MapScreenState extends State<MapScreen> {
           zoom: 17,
         ),
         markers: _markers,
+        circles: _circles,
       ),
     );
   }
