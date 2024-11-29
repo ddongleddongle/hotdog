@@ -37,7 +37,8 @@ class _MapScreenState extends State<MapScreen> {
   UserProvider? userProvider; // 초기화 이전에는 null 허용
   List<LatLng> userPositions = []; // 사용자 위치 리스트
   List<MarkerInfo> _userMarkers = []; //사용자 마커 리스트
-
+  
+  //시설 마커 리스트
   List<MarkerInfo> _markerInfos = [
     MarkerInfo(
       title: '장소 1',
@@ -49,6 +50,12 @@ class _MapScreenState extends State<MapScreen> {
       title: '장소 2',
       description: '장소 2의 설명입니다.',
       position: LatLng(35.2200, 129.0150),
+      visible: true,
+    ),
+    MarkerInfo(
+      title: '금곡 도서관',
+      description: '금곡 도서관의 설명입니다.',
+      position: LatLng(35.263179, 129.016732),
       visible: true,
     ),
   ];
@@ -80,25 +87,10 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-
-      setState(() {
-        _currentPosition =
-            LatLng(position.latitude, position.longitude); // 현재 위치 설정
-        //_checkProximityToMarkers();    실제는 여기서 장소에 접근했는지 확인
-      });
-
-      _circles.clear();
-      _addCircle();
-      mapController.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(target: _currentPosition!, zoom: 17),
-      ));
-    } catch (e) {
-      print(e); // 오류 처리
-    }
+  Future<void> _currentCamera() async {
+    await mapController.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(target: _currentPosition!, zoom: 17),
+    ));
   }
 
   Future<void> _addCircle() async {
@@ -108,7 +100,7 @@ class _MapScreenState extends State<MapScreen> {
         circleId: CircleId('currentRadius'),
         center: _currentPosition!,
         radius: visibleditance/2,
-        fillColor: Colors.blue.withOpacity(0.1), // 투명한 파란색
+        fillColor: Colors.blue.withOpacity(0.05), // 투명한 파란색
         strokeColor: Colors.blue, // 외곽선 파란색
         strokeWidth: 1, // 외곽선 두께
       ));
@@ -171,45 +163,63 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  void startMarkerMovement() {
-    movementTimer = Timer.periodic(Duration(seconds: 2), (timer) {
+  void _startMove() {
+
+    movementTimer = Timer.periodic(Duration(seconds: 2), (timer) async{
+      await _move();
 
       setState(() {
-        _userMarkers = _userMarkers.map((usermarker) {
-          // 현재 위치와의 차이를 계산
-          double deltaLat = _currentPosition!.latitude - usermarker.position.latitude;
-          double deltaLng = _currentPosition!.longitude - usermarker.position.longitude;
-
-          // 마커가 현재 위치로 점진적으로 이동하도록 업데이트
-          LatLng newPosition = LatLng(
-            usermarker.position.latitude + (deltaLat * 0.1), // 10% 이동
-            usermarker.position.longitude + (deltaLng * 0.1), // 10% 이동
-          );
-
-          return MarkerInfo(
-            title: usermarker.title,
-            description: usermarker.description,
-            visible: usermarker.visible,
-            position: newPosition, // 새로운 위치로 변경
-          );
-        }).toList();
         
-        //_getCurrentLocation(); 실제에서는 내 위치도 갱신
-        //__fetchUserPositions(); 실제에서는 _addMarkers() 없애고
-        _addMarkers();
+        // _userMarkers = _userMarkers.map((usermarker) {
+        //   // 현재 위치와의 차이를 계산
+        //   double deltaLat = _currentPosition!.latitude - usermarker.position.latitude;
+        //   double deltaLng = _currentPosition!.longitude - usermarker.position.longitude;
+        //
+        //   // 마커가 현재 위치로 점진적으로 이동하도록 업데이트
+        //   LatLng newPosition = LatLng(
+        //     usermarker.position.latitude + (deltaLat * 0.3), // 30% 이동
+        //     usermarker.position.longitude + (deltaLng * 0.3), // 30% 이동
+        //   );
+        //
+        //   return MarkerInfo(
+        //     title: usermarker.title,
+        //     description: usermarker.description,
+        //     visible: usermarker.visible,
+        //     position: newPosition, // 새로운 위치로 변경
+        //   );
+        // }).toList();     //demo 시험
+        
       });
     });
   }
 
+  Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+
+      setState(() {
+        _currentPosition =
+            LatLng(position.latitude, position.longitude); // 현재 위치 설정
+        //_checkProximityToMarkers();    실제는 여기서 장소에 접근했는지 확인
+      });
+
+      _circles.clear();
+      _addCircle();
+      //db에 내 위치 갱신
+      await userProvider?.updatePosition(_currentPosition!.latitude, _currentPosition!.longitude);
+
+    } catch (e) {
+      print(e); // 오류 처리
+    }
+  }
   //유저들 위치를 갱신하고 맵에 표시
   void _fetchUserPositions() async {
     // userProvider가 초기화된 후 데이터를 가져옴
     await userProvider?.fetchUsersPosition();
-    await userProvider?.updatePosition(_currentPosition!.latitude, _currentPosition!.longitude);
     setState(() {
-      userPositions = List.from(userProvider?.userPositions ?? []);
+      userPositions = List.from(userProvider?.userPositions ?? []);  //혹시 몰라 가져옴
       _userMarkers = List.from(userProvider?.userMarkers ?? []);
-      _addMarkers();
     });
   }
 
@@ -246,16 +256,15 @@ class _MapScreenState extends State<MapScreen> {
 
       // 사용자 마커 (visible 동적 설정)
       for (var userMarker in _userMarkers) {
-        // 거리 계산
-        bool Visable = await _checkProximityToMarkers(userMarker);
 
+        // db에서 user가 party인지 확인하는 함수를 구현해야할 듯
         _markers.add(Marker(
           markerId: MarkerId(userMarker.title),
           position: userMarker.position,
-          visible: Visable, // 동적 가시성
+          visible: true, // 동적 가시성
           icon: customIcon, // 커스텀 아이콘
           onTap: () {
-            _onMarkerTapped(userMarker,Visable);
+            _onMarkerTapped(userMarker,false);
           },
         ));
       }
@@ -264,6 +273,12 @@ class _MapScreenState extends State<MapScreen> {
     } catch (e) {
       print('Error loading custom icon: $e'); // 오류 처리
     }
+  }
+
+  Future<void> _move() async{
+    _getCurrentLocation();
+    _fetchUserPositions();
+    _addMarkers();
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -275,7 +290,7 @@ class _MapScreenState extends State<MapScreen> {
     //유저 정보 업데이트
     userProvider?.updatePosition(_currentPosition!.latitude, _currentPosition!.longitude);
     _fetchUserPositions();
-    startMarkerMovement();
+    _startMove();
   }
 
   @override
@@ -285,16 +300,40 @@ class _MapScreenState extends State<MapScreen> {
         title: Text('지도 화면'),
         backgroundColor: Color(0xFFAAD5D1),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator()) // userProvider 초기화 전 로딩 표시
-          : GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: _currentPosition!,
-          zoom: 17,
-        ),
-        markers: _markers,
-        circles: _circles,
+      body: Stack(
+        children: [
+          _isLoading
+              ? Center(child: CircularProgressIndicator()) // userProvider 초기화 전 로딩 표시
+              : GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition!,
+              zoom: 17,
+            ),
+            markers: _markers,
+            circles: _circles,
+          ),
+          // 현위치 버튼
+          Align(
+            alignment: Alignment(0.99, 0.73),
+            child: ClipOval(
+              child: Material(
+                color: Colors.orange.shade100,
+                child: InkWell(
+                  splashColor: Colors.orange,
+                  child: SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Icon(Icons.my_location),
+                  ),
+                  onTap: () {
+                    _currentCamera();
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
