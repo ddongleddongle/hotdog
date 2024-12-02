@@ -12,6 +12,18 @@ class MapScreen extends StatefulWidget {
   _MapScreenState createState() => _MapScreenState();
 }
 
+class ReviewInfo {
+  late String content;
+  late int review;
+  late int id;
+
+  ReviewInfo({
+    required this.content,
+    required this.review,
+    required this.id,
+  });
+}
+
 class MarkerInfo {
   late String title;
   late String description;
@@ -39,12 +51,13 @@ class _MapScreenState extends State<MapScreen> {
   List<LatLng> userPositions = []; // 사용자 위치 리스트
   List<MarkerInfo> _userMarkers = []; //사용자 마커 리스트
   List<MarkerInfo> _markerInfos = [];
+  List<ReviewInfo> _reviewInfos = [];
 
   //시설 마커 리스트
   Future<List<MarkerInfo>> fetchLocations() async {
     try {
       final response =
-          await http.get(Uri.parse('http://116.124.191.174:15017/locations'));
+      await http.get(Uri.parse('http://116.124.191.174:15017/locations'));
 
       // API 응답 상태 코드 확인
       if (response.statusCode == 200) {
@@ -54,11 +67,11 @@ class _MapScreenState extends State<MapScreen> {
         // JSON 데이터를 MarkerInfo로 변환
         return jsonResponse
             .map((location) => MarkerInfo(
-                  title: location['name'],
-                  description: location['description'],
-                  position: LatLng(location['lat'], location['lng']),
-                  visible: true,
-                ))
+          title: location['name'],
+          description: location['description'],
+          position: LatLng(location['lat'], location['lng']),
+          visible: true,
+        ))
             .toList();
       } else {
         print(
@@ -152,30 +165,61 @@ class _MapScreenState extends State<MapScreen> {
         : false; // 파티 범위 이내면 true, 아니면 false
   }
 
-  void _showMarkerInfo(MarkerInfo markerInfo, bool partyStatus) {
+  void _showMarkerInfo(MarkerInfo markerInfo, bool partyStatus) async {
+    await userProvider?.getReview(markerInfo.title);
+    setState(() {
+      _reviewInfos = List.from(userProvider?.userReviews ?? []);
+    });
+    print(_reviewInfos);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.all(16.0),
-          height: 200,
+          // 높이를 조정하여 ListView가 보일 수 있도록 함
+          height: 500,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 markerInfo.title,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+
               ),
               SizedBox(height: 10),
               Text(markerInfo.description),
               if (partyStatus)
                 FloatingActionButton(
-                    child: Text('파티하기'), onPressed: () => print('파티')),
+                  child: Text('파티하기'),
+                  onPressed: () => print('파티'),
+                ),
+              // 리뷰 정보를 표시
+              Expanded(
+                child: _reviewInfos.isNotEmpty // 리뷰가 있을 경우에만 ListView 표시
+                    ? ListView.builder(
+                  itemCount: _reviewInfos.length,
+                  itemBuilder: (context, index) {
+                    var review = _reviewInfos[index];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(review.content),
+                        Row(
+                          children: List.generate(review.review ?? 0,
+                                  (index) => Icon(Icons.star, color: Colors.yellow)),
+                        ),
+                      ],
+                    );
+                  },
+                )
+                    : Center(child: Text("리뷰가 없습니다.")), // 리뷰가 없을 경우 메시지 표시
+              ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -194,24 +238,6 @@ class _MapScreenState extends State<MapScreen> {
       await _move();
 
       setState(() {
-        // _userMarkers = _userMarkers.map((usermarker) {
-        //   // 현재 위치와의 차이를 계산
-        //   double deltaLat = _currentPosition!.latitude - usermarker.position.latitude;
-        //   double deltaLng = _currentPosition!.longitude - usermarker.position.longitude;
-        //
-        //   // 마커가 현재 위치로 점진적으로 이동하도록 업데이트
-        //   LatLng newPosition = LatLng(
-        //     usermarker.position.latitude + (deltaLat * 0.3), // 30% 이동
-        //     usermarker.position.longitude + (deltaLng * 0.3), // 30% 이동
-        //   );
-        //
-        //   return MarkerInfo(
-        //     title: usermarker.title,
-        //     description: usermarker.description,
-        //     visible: usermarker.visible,
-        //     position: newPosition, // 새로운 위치로 변경
-        //   );
-        // }).toList();     //demo 시험
       });
     });
   }
@@ -236,9 +262,9 @@ class _MapScreenState extends State<MapScreen> {
       });
 
       _circles.clear();
-      _addCircle();
       await userProvider?.updatePosition(
           _currentPosition!.latitude, _currentPosition!.longitude);
+      _addCircle();
     } catch (e) {
       print(e); // 오류 처리
     }
@@ -282,8 +308,7 @@ class _MapScreenState extends State<MapScreen> {
             _onMarkerTapped(markerInfo, _party);
           },
         ));
-        print(
-            'Added marker: ${markerInfo.title} at ${markerInfo.position}'); // 마커 추가 로그
+        print('public marker: ${markerInfo.title} at ${markerInfo.position}'); // 마커 추가 로그
       }
 
       // 사용자 마커 (visible 동적 설정)
@@ -298,6 +323,7 @@ class _MapScreenState extends State<MapScreen> {
             _onMarkerTapped(userMarker, false);
           },
         ));
+        print('public marker: ${userMarker.title} at ${userMarker.position}'); // 마커 추가 로그
       }
 
       setState(() {}); // 변경사항 반영
@@ -336,17 +362,17 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           _isLoading
               ? Center(
-                  child:
-                      CircularProgressIndicator()) // userProvider 초기화 전 로딩 표시
+              child:
+              CircularProgressIndicator()) // userProvider 초기화 전 로딩 표시
               : GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _currentPosition!,
-                    zoom: 17,
-                  ),
-                  markers: _markers,
-                  circles: _circles,
-                ),
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition!,
+              zoom: 17,
+            ),
+            markers: _markers,
+            circles: _circles,
+          ),
           // 현위치 버튼
           Align(
             alignment: Alignment(0.99, 0.73),

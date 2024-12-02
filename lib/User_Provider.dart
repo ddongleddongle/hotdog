@@ -27,6 +27,7 @@ class UserProvider with ChangeNotifier {
   //late MarkerInfo markerInfo;
   late List<LatLng> userPositions = []; // LatLng 객체를 저장할 리스트
   late List<MarkerInfo> userMarkers = [];
+  late List<ReviewInfo> userReviews = [];
 
   set coins(int? value) {
     _coins = value;
@@ -139,6 +140,48 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  Future<void> getReview(String title) async {
+    userReviews.clear();
+    final url = 'http://116.124.191.174:15017/review'; // API 엔드포인트
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'name': title}),
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
+        final List<dynamic> data = jsonData['results']; // 'results' 키에서 데이터 추출
+
+        for (var Review in data) {
+          String content = Review['text'] ?? "Unknown Location";
+          int? review = Review['review'];
+          int? id = Review['Id'];
+
+          // null 체크를 통해 안전하게 추가
+          if (review != null && id != null) {
+            userReviews.add(
+              ReviewInfo(
+                content: content,
+                review: review,
+                id: id,
+              ),
+            );
+          } else {
+            print('Review or ID is null for this review: $Review'); // null인 경우 로그 출력
+          }
+        }
+        notifyListeners(); // 상태 변경 통지
+      } else {
+        throw Exception('Failed to load review');
+      }
+    } catch (error) {
+      print('Error loading review: $error');
+    }
+  }
+
   Future<void> getPosition(double? lat, double? lng) async {
     _lat = lat;
     _lng = lng;
@@ -189,7 +232,6 @@ class UserProvider with ChangeNotifier {
             }
           }
         }
-        print(userPositions);
         for (var a in userMarkers)
           print(
               'Title: ${a.title}, Position: ${a.position}, Description: ${a.description}');
