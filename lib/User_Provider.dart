@@ -41,8 +41,15 @@ class UserProvider with ChangeNotifier {
   bool get isLoggedIn => _email != null;
 
   // 로그인 처리
-  Future<void> login(String email, String password, String petName,
-      String petBirthDay, int coins, double totaldistance, double? lat, double? lng) async {
+  Future<void> login(
+      String email,
+      String password,
+      String petName,
+      String petBirthDay,
+      int coins,
+      double totaldistance,
+      double? lat,
+      double? lng) async {
     _email = email;
     _password = password;
     _petName = petName;
@@ -56,8 +63,8 @@ class UserProvider with ChangeNotifier {
 
   // 로그아웃 처리
   Future<void> logout() async {
-
-    final url = 'http://116.124.191.174:15017/resetposition'; // 여기에 API 엔드포인트를 입력하세요
+    final url =
+        'http://116.124.191.174:15017/resetposition'; // 여기에 API 엔드포인트를 입력하세요
 
     try {
       final response = await http.post(
@@ -76,7 +83,7 @@ class UserProvider with ChangeNotifier {
       } else {
         throw Exception('Failed to update user data');
       }
-    }catch (error) {
+    } catch (error) {
       throw error; // 에러 처리
     }
 
@@ -90,8 +97,8 @@ class UserProvider with ChangeNotifier {
     _lng = null;
 
     notifyListeners(); // 로그아웃 상태 변경
-
   }
+
   // 사용자 정보 업데이트
   void updateUserInfo(
       String email, String password, String petName, String petBirthDay) {
@@ -183,8 +190,9 @@ class UserProvider with ChangeNotifier {
           }
         }
         print(userPositions);
-        for(var a in userMarkers)
-          print('Title: ${a.title}, Position: ${a.position}, Description: ${a.description}');
+        for (var a in userMarkers)
+          print(
+              'Title: ${a.title}, Position: ${a.position}, Description: ${a.description}');
       } else {
         throw Exception('Failed to fetch users position');
       }
