@@ -178,8 +178,8 @@ class _MapScreenState extends State<MapScreen> {
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.all(16.0),
-          // 높이를 조정하여 ListView가 보일 수 있도록 함
           height: 500,
+          width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
@@ -190,7 +190,6 @@ class _MapScreenState extends State<MapScreen> {
               Text(
                 markerInfo.title,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-
               ),
               SizedBox(height: 10),
               Text(markerInfo.description),
@@ -200,26 +199,44 @@ class _MapScreenState extends State<MapScreen> {
                   onPressed: () => print('파티'),
                 ),
               // 리뷰 정보를 표시
-              Expanded(
-                child: _reviewInfos.isNotEmpty // 리뷰가 있을 경우에만 ListView 표시
-                    ? ListView.builder(
-                  itemCount: _reviewInfos.length,
-                  itemBuilder: (context, index) {
-                    var review = _reviewInfos[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(review.content),
-                        Row(
-                          children: List.generate(review.review ?? 0,
-                                  (index) => Icon(Icons.star, color: Colors.yellow)),
-                        ),
-                      ],
-                    );
-                  },
+              if (_reviewInfos.isNotEmpty)
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _reviewInfos.length,
+                    itemBuilder: (context, index) {
+                      var review = _reviewInfos[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(review.content),
+                          Row(
+                            children: List.generate(review.review ?? 0,
+                                    (index) => Icon(Icons.star, color: Colors.yellow)),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              // 리뷰가 없을 경우 빈 공간을 차지하지 않도록
+              if (_reviewInfos.isEmpty)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Image.asset('assets/profile/${markerInfo.title}.jpg',
+                        width: 300,height: 300,alignment: Alignment.center,
+                        errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                          print("error: ${error} , name: ${markerInfo.title}" );
+                          return Text("사진이 없습니다."); // 이미지가 없을 경우 대체 텍스트
+                        },
+                      ),
+                      Text("${markerInfo.title}의 설명입니다."),
+                      // 별점 표시 (리뷰가 비어있으므로 별점은 0으로 설정)
+                    ],
+                  ),
                 )
-                    : Center(child: Text("리뷰가 없습니다.")), // 리뷰가 없을 경우 메시지 표시
-              ),
+              ,
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -286,8 +303,8 @@ class _MapScreenState extends State<MapScreen> {
     try {
       // 아이콘 생성
       final BitmapDescriptor customIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(82, 82)), // 아이콘 크기 설정
-        'assets/images/public_office_icon.png', // 이미지 경로
+        ImageConfiguration(size: Size(90, 90)), // 아이콘 크기 설정
+        'assets/images/userpet.png', // 이미지 경로
       );
 
       // 현재 위치 마커
