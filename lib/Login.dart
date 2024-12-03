@@ -61,9 +61,11 @@ class _LoginState extends State<Login> {
         final totaldistance = data['totaldistance'];
         final lat = data['lat'];
         final lng = data['lng'];
+        final partyid = data['party_id'];
+        final paty_request = data['party_request'];
 
         Provider.of<UserProvider>(context, listen: false)
-            .login(email, password, petName, petBirthDay, coins, totaldistance, lat, lng);
+            .login(email, password, petName, petBirthDay, coins, totaldistance, lat, lng, partyid, paty_request);
 
         // 로그인 성공 후 사용자 정보를 전달하여 Home 화면으로 이동
         Navigator.pushReplacement(

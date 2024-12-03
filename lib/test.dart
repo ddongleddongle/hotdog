@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'User_Provider.dart';
+import 'Home.dart';
 
 class test extends StatefulWidget {
   final String? petName;
@@ -16,7 +17,7 @@ class test extends StatefulWidget {
     required this.petName,
     required this.coins,
     required this.totaldistance,
-    required this.desitinationPosition,
+    this.desitinationPosition,
   });
 
   @override
@@ -25,6 +26,7 @@ class test extends StatefulWidget {
 
 class _MapScreenState extends State<test> {
   late GoogleMapController mapController;
+  UserProvider? userProvider;
   LatLng? _currentPosition;
   Set<Marker> _markers = {};
   List<LatLng> _routePoints = []; // 경로 포인트를 저장할 리스트
@@ -210,6 +212,7 @@ class _MapScreenState extends State<test> {
                   (userProvider.coins ?? 0) + earnedCoins,
                   newTotalDistance,
                 );
+                await userProvider.setparty(userProvider!.email!, -1);
                 setState(() {
                   userProvider.coins = (userProvider.coins ?? 0) +
                       earnedCoins; // 여기서 coins 값을 업데이트합니다.
@@ -218,8 +221,20 @@ class _MapScreenState extends State<test> {
                 });
 
                 Navigator.of(context).pop(); // 다이얼로그 닫기
+                MaterialPageRoute(builder: (context) => Home());
               },
-              child: Text('확인'),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Home(
+                      ),
+                    ),
+                  );
+                },
+                child: Text("확인"),
+              ),
             ),
           ],
         );

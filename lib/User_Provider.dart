@@ -13,6 +13,8 @@ class UserProvider with ChangeNotifier {
   double? _totaldistance;
   double? _lat;
   double? _lng;
+  int? _partyid;
+  bool? _partyRequest;
 
   // Getters
   String? get email => _email;
@@ -23,11 +25,15 @@ class UserProvider with ChangeNotifier {
   double? get totaldistance => _totaldistance;
   double? get lat => _lat;
   double? get lng => _lng;
+  int? get partyid => _partyid;
+  bool? get party_request => _partyRequest;
 
   //late MarkerInfo markerInfo;
   late List<LatLng> userPositions = []; // LatLng 객체를 저장할 리스트
   late List<MarkerInfo> userMarkers = [];
   late List<ReviewInfo> userReviews = [];
+  late List<String> userParticipant = [];
+  late List<int> partyRequest = [];
 
   set coins(int? value) {
     _coins = value;
@@ -50,7 +56,10 @@ class UserProvider with ChangeNotifier {
       int coins,
       double totaldistance,
       double? lat,
-      double? lng) async {
+      double? lng,
+      int? partyid,
+      bool? paty_request)
+  async {
     _email = email;
     _password = password;
     _petName = petName;
@@ -59,6 +68,8 @@ class UserProvider with ChangeNotifier {
     _totaldistance = totaldistance;
     _lat = lat;
     _lng = lng;
+    _partyid = partyid;
+    _partyRequest = paty_request;
     notifyListeners(); // 로그인 상태 변경
   }
 
@@ -232,9 +243,6 @@ class UserProvider with ChangeNotifier {
             }
           }
         }
-        for (var a in userMarkers)
-          print(
-              'Title: ${a.title}, Position: ${a.position}, Description: ${a.description}');
       } else {
         throw Exception('Failed to fetch users position');
       }
@@ -267,6 +275,143 @@ class UserProvider with ChangeNotifier {
         notifyListeners(); // 상태 변경 통지
       } else {
         throw Exception('Failed to update position data');
+      }
+    } catch (error) {
+      throw error; // 에러 처리
+    }
+  }
+
+  Future<void> participant(String title) async {
+    final url = 'http://116.124.191.174:15017/participant'; // 여기에 API 엔드포인트를 입력하세요
+    userParticipant.clear();
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'name' : title,
+        }),
+      );
+
+      //print("--------------참가자 함수 작동");
+
+      final Map<String, dynamic> data = jsonDecode(response.body); // JSON 객체로 파싱
+      final List<dynamic> participants = data['results']; // 'results' 키로 접근
+
+      for(var participant in participants){
+        String pet_name = participant['pet_name'] ?? 'Unknown Participant';
+        int? party_id = participant['party_id'];
+
+        userParticipant.add(pet_name);
+        if (party_id != null) {
+          partyRequest.add(party_id);
+        }
+      }
+
+      print("participant debug : ${data}");
+
+      if (response.statusCode == 200) {
+        // 서버 응답 처리
+        notifyListeners(); // 상태 변경 통지
+      } else {
+        throw Exception('Failed to get participant');
+      }
+    } catch (error) {
+      throw error; // 에러 처리
+    }
+  }
+
+  Future<void> party(String email, String title) async {
+    final url = 'http://116.124.191.174:15017/party'; // 여기에 API 엔드포인트를 입력하세요
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': email,
+          'name' : title,
+        }),
+      );
+      if (response.statusCode == 200) {
+        // 서버 응답 처리
+        notifyListeners(); // 상태 변경 통지
+      } else {
+        throw Exception('Failed to party');
+      }
+    } catch (error) {
+      throw error; // 에러 처리
+    }
+  }
+
+  Future<void> setparty(String email, int partyid) async {
+    final url = 'http://116.124.191.174:15017/partyset'; // 여기에 API 엔드포인트를 입력하세요
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': email,
+          'party_id' : partyid != 0 ? partyid : null,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // 서버 응답 처리
+        notifyListeners(); // 상태 변경 통지
+      } else {
+        throw Exception('Failed to reset party');
+      }
+    } catch (error) {
+      throw error; // 에러 처리
+    }
+  }
+
+  Future<void> request(String email, String name) async {
+    final url = 'http://116.124.191.174:15017/request'; // 여기에 API 엔드포인트를 입력하세요
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': email,
+          'name' : name,
+        }),
+      );
+
+      //final Map<String, dynamic> data = jsonDecode(response.body); // JSON 객체로 파싱
+      //final List<dynamic> requests = data['results']; // 'results' 키로 접근
+
+      partyRequest.clear();
+
+      final List<dynamic> data = jsonDecode(response.body);
+
+      print(data);
+
+      for(var request in data){
+        int? party_request = request['party_request'];
+
+        if (party_request != null) {
+          partyRequest.add(party_request);
+        }
+      }
+
+      if (response.statusCode == 200) {
+        // 서버 응답 처리
+        notifyListeners(); // 상태 변경 통지
+      } else {
+        throw Exception('Failed to request');
       }
     } catch (error) {
       throw error; // 에러 처리
