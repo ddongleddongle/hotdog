@@ -41,12 +41,12 @@ class MarkerInfo {
 
 class _MapScreenState extends State<MapScreen> {
   late GoogleMapController mapController;
-  String partyplace = "";  // 파티 참여시 장소
+  String _partyplace = "";  // 파티 참여시 장소
   double visibleditance = 500;
   bool _isLoading = true;
   bool _isParty = false;    //파티 참여를 시작했는가
-  bool _isWalking = false;  //산책 시작을 눌렀는가
-  bool _canWalking = false;
+  bool _isWalking = false;  //산책 요청을 눌렀는가
+  bool _canWalking = false; //산책 가능한가
   Timer? movementTimer;
   Timer? participantTimer;
   LatLng? _currentPosition; // 기본 위치
@@ -55,7 +55,7 @@ class _MapScreenState extends State<MapScreen> {
   UserProvider? userProvider; // 초기화 이전에는 null 허용
   List<LatLng> userPositions = []; // 사용자 위치 리스트
   List<MarkerInfo> _userMarkers = []; //사용자 마커 리스트
-  List<MarkerInfo> _markerInfos = [];
+  List<MarkerInfo> _markerInfos = []; //구조물 마커 리스트
   List<ReviewInfo> _reviewInfos = [];
   List<String> _userParticipant = [];
   List<int> partyRequest = [];
@@ -70,10 +70,21 @@ class _MapScreenState extends State<MapScreen> {
     userProvider = Provider.of<UserProvider>(context, listen: false);
   }
 
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    mapController.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(target: _currentPosition!, zoom: 17),
+    ));
+    _addCircle();
+    //유저 정보 업데이트
+    userProvider?.updatePosition(_currentPosition!.latitude, _currentPosition!.longitude); //DB에 내 위치 저장
+    _fetchUserPositions();
+    _startTime();
+  }
+
   Future<void> _initialize() async {
     await _getCurrentLocation(); // 현재 위치 가져오기
     await _fetchLocations();
-    await _getCurrentLocation(); // 비동기 작업 수행
     setState(() {
       _isLoading = false; // 로딩이 끝났음을 알림
     });
@@ -88,27 +99,36 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     movementTimer?.cancel();
+    participantTimer?.cancel();
     super.dispose();
   }
+
   Future<void> _move() async {
     _getCurrentLocation();
     _fetchUserPositions();
+    _fetchLocations();
     _addMarkers();
   }
 
   void _startTime() {
-    movementTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
+    movementTimer = Timer.periodic(Duration(seconds: 3), (timer) async {
       await _move();
-      setState(() {
-      });
-    });
-    participantTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
-      if(_isParty) {
-        await _updateParticipants();
-        _canWalking = await _checkPartyRequest();
+      if (mounted) {
+        setState(() {});
       }
-      setState(() {
-      });
+    });
+
+    participantTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      if (_isParty) {
+        await _updateParticipants();
+        if(_isWalking) {
+            await userProvider?.request(userProvider!.email!, _partyplace);
+            _canWalking = await _checkPartyRequest();
+        }
+      }
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -133,8 +153,8 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _onMarkerTapped(MarkerInfo markerInfo, bool _party) {
-    _showMarkerInfo(markerInfo, _party); // 마커 정보를 보여주며 party 상태 전달
+  void _onMarkerTapped(MarkerInfo markerInfo, bool _party, bool _isStructure) {
+    _showMarkerInfo(markerInfo, _party, _isStructure); // 마커 정보를 보여주며 party 상태 전달
   }
 
   //request를 하나씩 보고 전부 -1 이면 산책 실행
@@ -148,7 +168,7 @@ class _MapScreenState extends State<MapScreen> {
           return false;
       }
     }
-
+    print("----------산책 시작 가능-----------");
     return true;
   }
 
@@ -168,14 +188,19 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _updateParticipants() async {
     //실시간 파티원 업데이트
     _userParticipant.clear();
-    if(partyplace == ""){
+    if(_partyplace == ""){
       print("파티 장소가 지정되지 않았음");
     }
-    await userProvider?.participant(partyplace);
+    if(_isWalking)
+      await userProvider?.participant(_partyplace,1);
+    if(!_isWalking)
+      await userProvider?.participant(_partyplace,0);
+
     _userParticipant = List.from(userProvider?.userParticipant ?? []);
+    print("파티원 : ${_userParticipant}");
+
     setState(() {
       if (_userParticipant != null && _userParticipant!.isNotEmpty) {
-        //_userParticipant = _userParticipant!.map((participant) => participant.trim()).toList();
         _participantStreamController.add(_userParticipant);
       }
     });
@@ -209,45 +234,14 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  //시설 마커 리스트
-  Future<List<MarkerInfo>> fetchLocations() async {
-    try {
-      final response =
-      await http.get(Uri.parse('http://116.124.191.174:15017/locations'));
-
-      // API 응답 상태 코드 확인
-      if (response.statusCode == 200) {
-        List jsonResponse = json.decode(response.body);
-        print('API Response: $jsonResponse'); // API 응답 출력
-
-        // JSON 데이터를 MarkerInfo로 변환
-        return jsonResponse
-            .map((location) => MarkerInfo(
-          title: location['name'],
-          description: location['description'],
-          position: LatLng(location['lat'], location['lng']),
-          visible: true,
-        ))
-            .toList();
-      } else {
-        print(
-            'Failed to load locations: ${response.statusCode}');
-        throw Exception('Failed to load locations');
-      }
-    } catch (e) {
-      print('Error fetching locations: $e');
-      throw Exception('Error fetching locations');
-    }
-  }
-
   Future<void> _fetchLocations() async {
     try {
-      List<MarkerInfo> locations = await fetchLocations();
+      List<MarkerInfo>? locations = await userProvider?.fetchLocations();
       setState(() {
-        _markerInfos = locations; // _markerInfos에 저장
+        _markerInfos = List.from(locations?? []); // _markerInfos에 저장
       });
       //print('Fetched locations: $_markerInfos');
-      await _addMarkers();
+      //await _addMarkers();
     } catch (e) {
       print('Error in _fetchLocations: $e');
     }
@@ -256,10 +250,13 @@ class _MapScreenState extends State<MapScreen> {
   //유저들 위치를 갱신하고 맵에 표시
   void _fetchUserPositions() async {
     await userProvider?.fetchUsersPosition();
-    setState(() {
-      userPositions = List.from(userProvider?.userPositions ?? []); //혹시 몰라 가져옴
-      _userMarkers = List.from(userProvider?.userMarkers ?? []);
-    });
+
+    if (mounted) {
+      setState(() {
+        userPositions = List.from(userProvider?.userPositions ?? []);
+        _userMarkers = List.from(userProvider?.userMarkers ?? []);
+      });
+    }
   }
 
   Future<void> _addMarkers() async {
@@ -277,6 +274,8 @@ class _MapScreenState extends State<MapScreen> {
         markerId: MarkerId('currentLocation'),
         position: _currentPosition!,
         infoWindow: InfoWindow(title: '현재 위치'),
+        onTap: () {
+        },
       ));
 
       // 구조물 마커 (파란색)
@@ -287,7 +286,7 @@ class _MapScreenState extends State<MapScreen> {
           position: markerInfo.position,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
           onTap: () {
-            _onMarkerTapped(markerInfo, _party);
+            _onMarkerTapped(markerInfo, _party, true);
           },
         ));
         //print('public marker: ${markerInfo.title} at ${markerInfo.position}'); // 마커 추가 로그
@@ -302,7 +301,7 @@ class _MapScreenState extends State<MapScreen> {
           visible: true, // 동적 가시성
           icon: customIcon, // 커스텀 아이콘
           onTap: () {
-            _onMarkerTapped(userMarker, false);
+            _onMarkerTapped(userMarker, false, false);
           },
         ));
         //print('public marker: ${userMarker.title} at ${userMarker.position}'); // 마커 추가 로그
@@ -314,11 +313,9 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _showMarkerInfo(MarkerInfo markerInfo, bool partyStatus) async {
+  void _showMarkerInfo(MarkerInfo markerInfo, bool partyStatus, bool _isStruture) async {
     await userProvider?.getReview(markerInfo.title);
-    setState(() {
-      _reviewInfos = List.from(userProvider?.userReviews ?? []);
-    });
+    _reviewInfos = List.from(userProvider?.userReviews ?? []);
 
     // 모달 바텀 시트 표시
     showModalBottomSheet(
@@ -341,86 +338,82 @@ class _MapScreenState extends State<MapScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
-//    ----------------- 구조물 sheet ---------------
-              if (!_isParty) ... [
-                Text(markerInfo.description),
-                if (partyStatus)
-                  FloatingActionButton(
-                    child: Text('파티하기'),
-                    onPressed: () async {
-                      await userProvider?.party(userProvider!.email!, markerInfo.title);
-                      await userProvider?.participant(markerInfo.title);
+              Text(markerInfo.description),
+              if (!_isParty && partyStatus && (_isStruture == true))
+                FloatingActionButton(
+                  child: Text('파티하기'),
+                  onPressed: () async {
+                    await userProvider?.party(userProvider!.email!, markerInfo.title);
+                    await userProvider?.participant(markerInfo.title, 0);
+                    if (mounted) { // mounted 체크
                       setState(() {
                         _isParty = true;
-                        if(markerInfo.title != null)
-                          partyplace = markerInfo.title;
+                        if (markerInfo.title != null)
+                          _partyplace = markerInfo.title;
                         _userParticipant = List.from(userProvider?.userParticipant ?? []);
                       });
-                      Navigator.of(context).pop();
-                      _showMarkerInfo(markerInfo, partyStatus);
+                    }
+                    Navigator.of(context).pop();
+                    _showMarkerInfo(markerInfo, partyStatus, true);
+                  },
+                ),
+              if (_reviewInfos.isNotEmpty && _isStruture == true)
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _reviewInfos.length,
+                    itemBuilder: (context, index) {
+                      var review = _reviewInfos[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(review.content),
+                          Row(
+                            children: List.generate(review.review ?? 0, (index) =>
+                                Icon(Icons.star, color: Colors.yellow)),
+                          ),
+                        ],
+                      );
                     },
                   ),
-//   ------------------ 유저 sheet -------------------
-                if (_reviewInfos.isNotEmpty)
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _reviewInfos.length,
-                      itemBuilder: (context, index) {
-                        var review = _reviewInfos[index];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(review.content),
-                            Row(
-                              children: List.generate(review.review ?? 0,
-                                      (index) => Icon(Icons.star, color: Colors.yellow)),
-                            ),
-                          ],
-                        );
+                ),
+// ------------------ 유저 sheet -------------------
+              if (_isStruture == false)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Image.asset(
+                      'assets/profile/${markerInfo.title}.jpg',
+                      width: 300,
+                      height: 300,
+                      alignment: Alignment.center,
+                      errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                        print("error: ${error} , name: ${markerInfo.title}");
+                        return Text("사진이 없습니다.");
                       },
                     ),
-                  ),
-                if (_reviewInfos.isEmpty)
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                          'assets/profile/${markerInfo.title}.jpg',
-                          width: 300,
-                          height: 300,
-                          alignment: Alignment.center,
-                          errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-                            print("error: ${error} , name: ${markerInfo.title}");
-                            return Text("사진이 없습니다."); // 이미지가 없을 경우 대체 텍스트
-                          },
-                        ),
-                        Text("${markerInfo.title}의 설명입니다."),
-                      ],
-                    ),
-                  ),
-              ],
-//  ---------------------- 파티 중 ----------------------
-              if (_isParty) ... <Widget>[
+                    Text("${markerInfo.title}의 설명입니다."),
+                  ],
+                ),
+// ---------------------- 파티 중 ----------------------
+              if (_isParty && _isStruture == true) ... <Widget>[
                 SizedBox(
                     height: 40,
                     child: Center(
-                        child: Text(_canWalking == false? "현재 파티원" : "수락한 파티원"),
+                      child: Text(_isWalking == false ? "현재 파티원" : "수락한 파티원"),
                     )
                 ),
                 StreamBuilder<List<String>>(
                   stream: _participantStreamController.stream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator(); // 로딩 중 표시
+                      return CircularProgressIndicator();
                     }
                     if (snapshot.hasError) {
                       return Text("오류 발생: ${snapshot.error}");
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text("파티원이 없습니다."); // 파티원이 없을 때
+                      return Text("파티원이 없습니다.");
                     }
-                    // 참가자 목록 표시
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -446,110 +439,65 @@ class _MapScreenState extends State<MapScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     await userProvider?.setparty(userProvider!.email!, -1);
-                    setState(() {
-                      _isParty = false;
-                      _canWalking = false;
-                      _userParticipant.clear();
-                    });
+                    if (mounted) { // mounted 체크
+                      setState(() {
+                        _isParty = false;
+                        _isWalking = false;
+                        _canWalking = false;
+                        _userParticipant.clear();
+                      });
+                    }
                     Navigator.of(context).pop();
-                    _showMarkerInfo(markerInfo, partyStatus);
+                    _showMarkerInfo(markerInfo, partyStatus, true);
                   },
                   child: Text('파티 나가기'),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   ),
                 ),
-                if(!_isWalking && !_canWalking)
+                if (_isParty && !_isWalking)
                   ElevatedButton(
                     onPressed: () async {
-                      await userProvider?.request(userProvider!.email!, markerInfo.title);
-                      setState(() {
-                      });
+                      await userProvider?.request(userProvider!.email!, _partyplace);
+                      //if (mounted) { // mounted 체크
+                        setState(() {
+                          _isWalking = true;
+                        });
+                     // }
                       Navigator.of(context).pop();
-                      _showMarkerInfo(markerInfo, partyStatus);
+                      _showMarkerInfo(markerInfo, partyStatus, true);
                     },
                     child: Text('산책 요청'),
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                     ),
                   ),
-//     -------------- 산책 시작 ----------------
-                if(_canWalking)
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        await _checkPartyRequest();
+                // -------------- 산책 시작 ----------------
+                if (_isWalking && _canWalking)
+                  ElevatedButton(
+                    onPressed: () async {
+                      await _checkPartyRequest();
+                      if (mounted) { // mounted 체크
                         setState(() {
                           _isParty = false;
                           _isWalking = false;
                           _canWalking = false;
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => test(
-                              petName : userProvider?.petName,
-                              coins : userProvider?.coins,
-                              totaldistance : userProvider?.totaldistance,
-                            )),
-                          );
                         });
-                      },
-                      child: Text('산책 시작'),
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                      ),
-                    ),
-                  ),
-                /*if(_isWalking)
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _userParticipant.length,
-                      itemBuilder: (context, index) {
-                        var participant = _userParticipant[index];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(participant),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                if(_isWalking)
-                  StreamBuilder<List<int>>(
-                    stream: _requestStreamController.stream,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator(); // 로딩 중 표시
                       }
-                      if (snapshot.hasError) {
-                        return Text("오류 발생: ${snapshot.error}");
-                      }
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Text("파티 요청이 없습니다."); // 파티원이 없을 때
-                      }
-                      // 참가자 목록 표시
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Wrap(
-                            spacing: 8.0,
-                            runSpacing: 4.0,
-                            children: List.generate(
-                              snapshot.data!.length,
-                                  (index) => Padding(
-                                key: ValueKey('participant_${snapshot.data![index]}'),
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: Text(
-                                  snapshot.data![index] == -1 ? "수락" : "대기중",
-                                  style: TextStyle(fontSize: 16, color: Colors.black),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => test(
+                          petName: userProvider?.petName,
+                          coins: userProvider?.coins,
+                          totaldistance: userProvider?.totaldistance,
+                        )),
                       );
                     },
-                  ) */
+                    child: Text('산책 시작'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                    ),
+                  ),
               ],
               TextButton(
                 onPressed: () {
@@ -562,19 +510,6 @@ class _MapScreenState extends State<MapScreen> {
         );
       },
     );
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    mapController.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(target: _currentPosition!, zoom: 17),
-    ));
-    _addCircle();
-    //유저 정보 업데이트
-    userProvider?.updatePosition(
-        _currentPosition!.latitude, _currentPosition!.longitude);
-    _fetchUserPositions();
-    _startTime();
   }
 
 //------------------- 구글 맵 ------------------------

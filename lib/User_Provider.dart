@@ -165,11 +165,14 @@ class UserProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = jsonDecode(response.body);
         final List<dynamic> data = jsonData['results']; // 'results' 키에서 데이터 추출
+        //print("review : ${data}");
+        print("리뷰 가져옴");
+
 
         for (var Review in data) {
           String content = Review['text'] ?? "Unknown Location";
           int? review = Review['review'];
-          int? id = Review['Id'];
+          int? id = Review['id'];
 
           // null 체크를 통해 안전하게 추가
           if (review != null && id != null) {
@@ -199,6 +202,39 @@ class UserProvider with ChangeNotifier {
     notifyListeners(); // 상태 변경 통지
   }
 
+  //시설 마커 리스트
+  Future<List<MarkerInfo>> fetchLocations() async {
+    try {
+      final response =
+      await http.get(Uri.parse('http://116.124.191.174:15017/locations'));
+
+      // API 응답 상태 코드 확인
+      if (response.statusCode == 200) {
+        List jsonResponse = json.decode(response.body);
+
+        //print('API Response: $jsonResponse'); // API 응답 출력
+        print("구조물 가져옴");
+
+        // JSON 데이터를 MarkerInfo로 변환
+        return jsonResponse
+            .map((location) => MarkerInfo(
+          title: location['name'],
+          description: location['description'],
+          position: LatLng(location['lat'], location['lng']),
+          visible: true,
+        ))
+            .toList();
+      } else {
+        print(
+            'Failed to load locations: ${response.statusCode}');
+        throw Exception('Failed to load locations');
+      }
+    } catch (e) {
+      print('Error fetching locations: $e');
+      throw Exception('Error fetching locations');
+    }
+  }
+
   //위치 정보 획득
   Future<void> fetchUsersPosition() async {
     final url = 'http://116.124.191.174:15017/usersposition'; // API 엔드포인트
@@ -215,6 +251,7 @@ class UserProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
 
+        print("유저 가져옴");
         // 응답에서 lat, lng 값을 가져와서 LatLng 리스트에 추가
         userPositions.clear(); // 기존 리스트 초기화
         userMarkers.clear();
@@ -281,8 +318,10 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> participant(String title) async {
+  Future<void> participant(String title, int party_request) async {
     final url = 'http://116.124.191.174:15017/participant'; // 여기에 API 엔드포인트를 입력하세요
+
+    print("파티 참가자 파라미터 : ${title} ${party_request}");
     userParticipant.clear();
 
     try {
@@ -293,6 +332,7 @@ class UserProvider with ChangeNotifier {
         },
         body: json.encode({
           'name' : title,
+          'party_request' : party_request,
         }),
       );
 
@@ -311,7 +351,7 @@ class UserProvider with ChangeNotifier {
         }
       }
 
-      print("participant debug : ${data}");
+      print("파티 참가자 가져옴 : ${participants}");
 
       if (response.statusCode == 200) {
         // 서버 응답 처리
@@ -397,7 +437,7 @@ class UserProvider with ChangeNotifier {
 
       final List<dynamic> data = jsonDecode(response.body);
 
-      print(data);
+      print("request : ${data}");
 
       for(var request in data){
         int? party_request = request['party_request'];

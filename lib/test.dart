@@ -155,7 +155,7 @@ class _MapScreenState extends State<test> {
     mapController.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: _currentPosition!, zoom: 17), // 확대된 줌 값
     ));
-    _createPolylines(_currentPosition!.latitude,_currentPosition!.longitude,widget.desitinationPosition!.latitude,widget.desitinationPosition!.longitude);
+    //_createPolylines(_currentPosition!.latitude,_currentPosition!.longitude,widget.desitinationPosition!.latitude,widget.desitinationPosition!.longitude);
   }
 
   void _startWalking() {
