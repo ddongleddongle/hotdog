@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:software/test.dart';
 import 'package:software/User_Provider.dart';
 import 'package:http/http.dart' as http;
-
+import 'auth.dart';
 import 'Home.dart';
 
 class MapScreen extends StatefulWidget {
@@ -89,7 +89,7 @@ class _MapScreenState extends State<MapScreen> {
     // Provider로부터 userProvider를 가져옴
     userProvider = Provider.of<UserProvider>(context, listen: false);
   }
-  
+
   //맵 만들어질 때 함수 설정
   void _onMapCreated(GoogleMapController controller) async{
     // 위치 권한 요청
@@ -134,7 +134,7 @@ class _MapScreenState extends State<MapScreen> {
     participantTimer?.cancel();
     super.dispose();
   }
-  
+
   //주기적으로 실행되는 함수 설정
   Future<void> _move() async {
     _getCurrentLocation();
@@ -142,7 +142,7 @@ class _MapScreenState extends State<MapScreen> {
     _fetchLocations();
     _addMarkers();
   }
-  
+
   //주기적인 시간으로 함수 작동
   void _startTime() {
     movementTimer = Timer.periodic(Duration(seconds: 3), (timer) async {
@@ -156,12 +156,12 @@ class _MapScreenState extends State<MapScreen> {
       if (_inParty) {
         await _updateParticipants();
         if(_isRequest && !_canWalking) {
-            await userProvider?.request(userProvider!.email!, _partyplace);
-            _canWalking = await _checkPartyRequest();
-            if (_canWalking == true) {
-              Navigator.of(context).pop();
-              _showMarkerInfo(_partymarker!, _inParty, true);
-            }
+          await userProvider?.request(userProvider!.email!, _partyplace);
+          _canWalking = await _checkPartyRequest();
+          if (_canWalking == true) {
+            Navigator.of(context).pop();
+            _showMarkerInfo(_partymarker!, _inParty, true);
+          }
         }
       }
       if (mounted) {
@@ -169,14 +169,14 @@ class _MapScreenState extends State<MapScreen> {
       }
     });
   }
-  
+
   //현재 위치로 카메라 이동 함수
   Future<void> _currentCamera() async {
     await mapController.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: _currentPosition!, zoom: 17),
     ));
   }
-  
+
   //범위 원 만들기
   Future<void> _addCircle() async {
     // 현재 위치가 설정된 경우 원을 추가
@@ -238,16 +238,19 @@ class _MapScreenState extends State<MapScreen> {
           actions: [
             TextButton(
               onPressed: () async {
+                bool isPhotoVerified = await auth();
                 // UserProvider를 통해 업데이트
+                int finalEarnedCoins = isPhotoVerified ? earnedCoins : (earnedCoins / 2).floor();
+
                 double newTotalDistance = (userProvider?.totaldistance ?? 0.0) + _totalDistance;
                 await userProvider?.updateUserCoinsAndDistance(
-                  (userProvider?.coins ?? 0) + earnedCoins,
+                  (userProvider?.coins ?? 0) + finalEarnedCoins,
                   newTotalDistance,
                 );
                 await userProvider?.setparty(userProvider!.email!, -1);
                 setState(() {
                   userProvider?.coins = (userProvider?.coins ?? 0) +
-                      earnedCoins; // 여기서 coins 값을 업데이트합니다.
+                      finalEarnedCoins; // 여기서 coins 값을 업데이트합니다.
                   userProvider?.totaldistance =
                       (userProvider?.totaldistance ?? 0) + newTotalDistance;
                 });
@@ -308,7 +311,7 @@ class _MapScreenState extends State<MapScreen> {
     print("----------산책 시작 가능-----------");
     return true;
   }
-  
+
   //장소와의 거리를 체크하는 함수
   Future<bool> _checkProximityToMarkers(MarkerInfo markerInfo) async {
     double distance = Geolocator.distanceBetween(
@@ -383,11 +386,11 @@ class _MapScreenState extends State<MapScreen> {
     print("파티원 : ${_userParticipant}");
 
     if(mounted)
-    setState(() {
-      if (_userParticipant != null && _userParticipant!.isNotEmpty) {
-        _participantStreamController.add(_userParticipant);
-      }
-    });
+      setState(() {
+        if (_userParticipant != null && _userParticipant!.isNotEmpty) {
+          _participantStreamController.add(_userParticipant);
+        }
+      });
   }
 
   //장소 위치 갱신 저장
@@ -418,7 +421,7 @@ class _MapScreenState extends State<MapScreen> {
       });
     }
   }
-  
+
   //현재 유저 / 장소 리스트에 있는 마커들을 화면에 표시
   Future<void> _addMarkers() async {
     _markers.clear();
@@ -724,6 +727,47 @@ class _MapScreenState extends State<MapScreen> {
 
                   },
                 ),
+<<<<<<< HEAD
+=======
+                if (_inParty && !_isRequest)
+                  ElevatedButton(
+                    onPressed: () async {
+                      await userProvider?.request(userProvider!.email!, _partyplace);
+                      //if (mounted) { // mounted 체크
+                      setState(() {
+                        _isRequest = true;
+                      });
+                      // }
+                      Navigator.of(context).pop();
+                      _showMarkerInfo(markerInfo, partyStatus, true);
+                    },
+                    child: Text('파티 요청'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                    ),
+                  ),
+                // -------------- 산책 시작 ----------------
+                if (_isRequest && _canWalking)
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      if (mounted) { // mounted 체크
+                        setState(() {
+                          message('파티가 시작되었습니다. 추가 포인트 x${pointRate!*10}%');
+                          _inParty = false;
+                          _isRequest = false;
+                          _canWalking = false;
+                          _isParty = true;
+                          pointRate = _userParticipant.length;
+                        });
+                      }
+                    },
+                    child: Text('파티 시작'),
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                    ),
+                  ),
+>>>>>>> cde88eaeea2397d1b68c00507712e7b7be7293e3
               ],
               // 파티 요청 버튼과 파티 나가기 버튼을 좌우로 정렬
               Row(
@@ -817,6 +861,7 @@ class _MapScreenState extends State<MapScreen> {
             color: Color(0xFFAAD5D1), // The border color
           ),
           Flexible(
+<<<<<<< HEAD
             child: Stack(
               children: [
                 _isLoading
@@ -843,16 +888,51 @@ class _MapScreenState extends State<MapScreen> {
                           width: 56,
                           height: 56,
                           child: Icon(Icons.my_location),
+=======
+              child: Stack(
+                children: [
+                  _isLoading
+                      ? Center(
+                      child: CircularProgressIndicator()) // userProvider 초기화 전 로딩 표시
+                      : GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    initialCameraPosition: CameraPosition(
+                      target: _currentPosition!,
+                      zoom: 17,
+                    ),
+                    markers: _markers,
+                    circles: _circles,
+                    polylines: Set<Polyline>.of(polylines.values).union({_polyline}),
+                  ),
+                  // 현위치 버튼
+                  Align(
+                    alignment: Alignment(0.99, 0.73),
+                    child: ClipOval(
+                      child: Material(
+                        color: Colors.orange.shade100,
+                        child: InkWell(
+                          splashColor: Colors.orange,
+                          child: SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: Icon(Icons.my_location),
+                          ),
+                          onTap: () {
+                            _currentCamera();
+                          },
+>>>>>>> cde88eaeea2397d1b68c00507712e7b7be7293e3
                         ),
-                        onTap: () {
-                          _currentCamera();
-                        },
                       ),
                     ),
                   ),
+<<<<<<< HEAD
                 ),
               ],
             ),
+=======
+                ],
+              )
+>>>>>>> cde88eaeea2397d1b68c00507712e7b7be7293e3
           ),
           Container(
             height: 3, // 라인의 높이
