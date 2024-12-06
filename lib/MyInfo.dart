@@ -8,6 +8,7 @@ import 'QnA.dart';
 import 'MyInfoModi.dart';
 import 'Shop/Shop.dart';
 import 'User_Provider.dart';
+import 'Mapscreen.dart';
 import 'Walking.dart';
 import 'test.dart';
 
@@ -40,10 +41,10 @@ class _MyInfoState extends State<MyInfo> {
     GestureDetector(
     onHorizontalDragEnd: (details) {
     // 좌우 스와이프 시 화면 전환
-    if (details.primaryVelocity! < 0) {
+    if (details.primaryVelocity! > 0) {
     Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) => Walking()),
+    MaterialPageRoute(builder: (context) => MapScreen()),
     );
     }
     },
@@ -319,7 +320,7 @@ class _MyInfoState extends State<MyInfo> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Walking(),
+                  builder: (context) => MapScreen(),
                 ));
             break;
           case 3:
