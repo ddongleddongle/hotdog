@@ -23,8 +23,9 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool isLoggedIn = true;
-  int currentSteps = 1000; // 초기 걸음 수
-  int stepGoal = 2660; // 목표 걸음 수
+  int currentSteps = 0; // 초기 걸음 수
+  int stepGoal = 2000; // 목표 걸음 수
+  UserProvider? userProvider;
   double? lat;
   double? lng;
   late SharedPreferences prefs;
@@ -33,68 +34,68 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    _initPedometer(); // pedometer 초기화
-    _requestLocationPermission();
-    _loadStepData();
+    // _initPedometer(); // pedometer 초기화
+    // _requestLocationPermission();
+    // _loadStepData();
     //_checkPermissions();  // SharedPreferences에서 데이터 로드
   }
 
-  _checkPermissions() async {
-    PermissionStatus status = await Permission.activityRecognition.request();
-  }
+  // _checkPermissions() async {
+  //   PermissionStatus status = await Permission.activityRecognition.request();
+  // }
 
   //권한요청
-  _requestLocationPermission() async {
-    var status = await Permission.location.status;
-    if (!status.isGranted) {
-      await Permission.location.request();
-    }
-  }
+  // _requestLocationPermission() async {
+  //   var status = await Permission.location.status;
+  //   if (!status.isGranted) {
+  //     await Permission.location.request();
+  //   }
+  // }
 
-  Future<void> _updatePosition() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  // Future<void> _updatePosition() async {
+  //   try {
+  //     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  //
+  //     // 위치 정보를 업데이트하기 전에 setState를 호출
+  //     setState(() {
+  //       lat = position.latitude;
+  //       lng = position.longitude;
+  //       print('Latitude: $lat, Longitude: $lng'); // 문자열 보간을 사용하여 출력
+  //     });
+  //
+  //     // UI 업데이트 후 비동기 작업 수행
+  //     final userProvider = Provider.of<UserProvider>(context, listen: false);
+  //     await userProvider.updatePosition(lat, lng);
+  //
+  //   } catch (e) {
+  //     print('Error occurred while fetching location: $e');
+  //   }
+  // }
 
-      // 위치 정보를 업데이트하기 전에 setState를 호출
-      setState(() {
-        lat = position.latitude;
-        lng = position.longitude;
-        print('Latitude: $lat, Longitude: $lng'); // 문자열 보간을 사용하여 출력
-      });
+  // _initPedometer() async {
+  //   Pedometer.stepCountStream.listen((stepCount) {
+  //     setState(() {
+  //       currentSteps = stepCount.steps; // StepCount 객체에서 실제 걸음 수 가져오기
+  //     });
+  //     _saveStepData(); // SharedPreferences에 저장
+  //   }, onError: (error) {
+  //     setState(() {
+  //       _status = 'Error: $error';
+  //     });
+  //   });
+  // }
 
-      // UI 업데이트 후 비동기 작업 수행
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      await userProvider.updatePosition(lat, lng);
-
-    } catch (e) {
-      print('Error occurred while fetching location: $e');
-    }
-  }
-
-  _initPedometer() async {
-    Pedometer.stepCountStream.listen((stepCount) {
-      setState(() {
-        currentSteps = stepCount.steps; // StepCount 객체에서 실제 걸음 수 가져오기
-      });
-      _saveStepData(); // SharedPreferences에 저장
-    }, onError: (error) {
-      setState(() {
-        _status = 'Error: $error';
-      });
-    });
-  }
-
-  _loadStepData() async {
+  _loadStepData(double currentSteps) async {
     prefs = await SharedPreferences.getInstance();
     String? lastDate = prefs.getString('lastDate');
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
+    print(lastDate);
     if (lastDate == null || lastDate != today) {
       currentSteps = 0;
       prefs.setString('lastDate', today);
-    } else {
-      //_resetSteps();
-      currentSteps = prefs.getInt('currentSteps') ?? 0;
+      final user = Provider.of<UserProvider>(context);
+      int currentCoins = user.coins ?? 0;
+      userProvider?.updateUserCoinsAndDistance(currentCoins, currentSteps);
     }
   }
 
@@ -117,17 +118,17 @@ class _HomeState extends State<Home> {
     return DateFormat('yyyy-MM-dd').format(date);
   }
 
-  double _convertStepsToKm(int steps) {
-    double stepLength = 0.75;
-    double km = (steps * stepLength) / 1000;
-    return km;
-  }
+  // double _convertToKm(double meter) {
+  //   double km = meter / 1000;
+  //   return km;
+  // }
 
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context);
-
-    double progress = currentSteps / stepGoal;
+    double totalDistance = user.totaldistance ?? 0.0;
+    _loadStepData(totalDistance);
+    double progress = totalDistance / stepGoal;
     progress = progress > 1.0 ? 1.0 : progress;
 
     double screenWidth = MediaQuery.of(context).size.width;
@@ -136,6 +137,7 @@ class _HomeState extends State<Home> {
     double radius = screenWidth * 0.3;
     double heightLimit = screenHeight * 0.3;
     radius = radius > heightLimit ? heightLimit : radius;
+
 
     return Scaffold(
         appBar: _buildAppBar(context),
@@ -184,14 +186,14 @@ class _HomeState extends State<Home> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                '${_convertStepsToKm(currentSteps).toStringAsFixed(2)} km',
+                                '${(totalDistance/ 1000).toStringAsFixed(2)} km',
                                 style: TextStyle(
                                   fontSize: 30,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                '목표: ${(stepGoal * 0.75 / 1000).toStringAsFixed(2)} km',
+                                '목표: ${(stepGoal / 1000).toStringAsFixed(2)} km',
                                 style: TextStyle(
                                   fontSize: 22,
                                   color: Colors.grey,
