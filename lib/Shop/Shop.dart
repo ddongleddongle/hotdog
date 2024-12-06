@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'welcome_header.dart';
 import 'category_button.dart';
 import 'product_grid.dart';
+import '../Mapscreen.dart';
 import '../User_Provider.dart';
 import '../walking.dart'; // Walking 페이지를 임포트합니다.
 import 'ProductClass.dart'; // Product 모델을 임포트합니다.
@@ -58,7 +59,23 @@ class _ShopState extends State<Shop> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+      // 좌우 스와이프 시 화면 전환
+      if (details.primaryVelocity! < 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MapScreen()),
+        );
+      }
+      else if (details.primaryVelocity! > 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      }
+    },
+        child:SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 59, 18, 163),
@@ -77,6 +94,7 @@ class _ShopState extends State<Shop> {
             ),
           ),
         ),
+      ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );
@@ -128,7 +146,7 @@ class _ShopState extends State<Shop> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Walking(),
+                  builder: (context) => MapScreen(),
                 ));
             break;
           case 3:
