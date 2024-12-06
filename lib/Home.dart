@@ -217,7 +217,7 @@ class _HomeState extends State<Home> {
 
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Color(0xFFAAD5D1),
+      backgroundColor: Colors.white,
       leading: IconButton(
         icon: Icon(Icons.settings, color: Colors.black54),
         onPressed: () {
@@ -226,7 +226,14 @@ class _HomeState extends State<Home> {
         },
       ),
       title: Text("Hot Dog",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFAAD5D1))),
+      bottom: PreferredSize(
+        preferredSize: Size.fromHeight(2.0), // 경계선의 두께
+        child: Container(
+          color: Color(0xFFAAD5D1),  // 경계선 색상
+          height: 4,  // 경계선의 두께
+        ),
+      ),
     );
   }
 

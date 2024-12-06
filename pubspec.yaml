@@ -73,6 +73,7 @@ flutter:
     - assets/
     - assets/images/
     - assets/profile/
+    - assets/location/
     - assets/locations.json
 
   # The following line ensures that the Material Icons font is
