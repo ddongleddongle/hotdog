@@ -238,7 +238,7 @@ class _MapScreenState extends State<MapScreen> {
           actions: [
             TextButton(
               onPressed: () async {
-                bool isPhotoVerified = await auth();
+                bool isPhotoVerified = await auth(context);
                 // UserProvider를 통해 업데이트
                 int finalEarnedCoins = isPhotoVerified ? earnedCoins : (earnedCoins / 2).floor();
 
@@ -483,6 +483,7 @@ class _MapScreenState extends State<MapScreen> {
     _showMarkerInfo(markerInfo, _party, _isStructure); // 마커 정보를 보여주며 party 상태 전달
   }
 
+  //산책하기 눌렀을 때 메세지
   Future <void> message(String message) async {
     showDialog(
       context: context,
@@ -514,6 +515,7 @@ class _MapScreenState extends State<MapScreen> {
     await userProvider?.getReview(markerInfo.title);
     _reviewInfos = List.from(userProvider?.userReviews ?? []);
 
+    // 모달 바텀 시트 표시
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -525,121 +527,56 @@ class _MapScreenState extends State<MapScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-            border: Border.all(color: Color(0xFFAAD5D1), width: 4),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    markerInfo.title,
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    height: 2,
-                    color: Color(0xFFAAD5D1),
-                    margin: EdgeInsets.only(bottom: 8),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Color(0xFFAAD5D1), width: 2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            'assets/location/${markerInfo.title}.png',
-                            width: 150,
-                            height: 100,
-                            fit: BoxFit.cover,
-                            errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-                              return SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Icon(Icons.error),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          markerInfo.description,
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Container(
-                    height: 2,
-                    color: Color(0xFFAAD5D1),
-                    margin: EdgeInsets.symmetric(vertical: 4),
-                  ),
-                ],
+              Text(
+                markerInfo.title,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              // 리뷰 부분 숨기기 (파티 상태일 때 리뷰 부분을 숨기도록 조건 추가)
-              if (!_inParty && !_isParty && _reviewInfos.isNotEmpty && _isStructure == true)
+              SizedBox(height: 10),
+              Text(markerInfo.description),
+              if (!_inParty && !_isParty && partyStatus && (_isStructure == true))
+                FloatingActionButton(
+                  child: Text('파티하기'),
+                  onPressed: () async {
+                    await userProvider?.party(userProvider!.email!, markerInfo.title);
+                    await userProvider?.participant(markerInfo.title, 0);
+                    if (mounted) { // mounted 체크
+                      setState(() {
+                        _inParty = true;
+                        if (markerInfo != null) {
+                          _partyplace = markerInfo.title;
+                          _partymarker = markerInfo;
+                        }
+                        _userParticipant = List.from(userProvider?.userParticipant ?? []);
+                      });
+                    }
+                    Navigator.of(context).pop();
+                    _showMarkerInfo(markerInfo, partyStatus, true);
+                  },
+                ),
+              if (_reviewInfos.isNotEmpty && _isStructure == true)
                 Expanded(
                   child: ListView.builder(
                     itemCount: _reviewInfos.length,
                     itemBuilder: (context, index) {
                       var review = _reviewInfos[index];
-                      return Container(
-                        margin: EdgeInsets.only(top: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                ...List.generate(review.review ?? 0, (starIndex) =>
-                                    Icon(Icons.star, color: Color(0xFFAAD5D1))),
-                                SizedBox(width: 8),
-                                Text(review.content),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                          ],
-                        ),
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(review.content),
+                          Row(
+                            children: List.generate(review.review ?? 0, (index) =>
+                                Icon(Icons.star, color: Colors.yellow)),
+                          ),
+                        ],
                       );
                     },
                   ),
                 ),
-              // 파티하기 버튼 (파티 상태가 아닌 경우에만 표시)
-              if (!_inParty && !_isParty && partyStatus && (_isStructure == true))
-                Container(
-                  width: 200,
-                  child: FloatingActionButton(
-                    backgroundColor: Color(0xFFAAD5D1),
-                    child: Text(
-                      '파티하기',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    onPressed: () async {
-                      await userProvider?.party(userProvider!.email!, markerInfo.title);
-                      await userProvider?.participant(markerInfo.title, 0);
-                      if (mounted) {
-                        setState(() {
-                          _inParty = true;
-                          if (markerInfo != null) {
-                            _partyplace = markerInfo.title;
-                            _partymarker = markerInfo;
-                          }
-                          _userParticipant = List.from(userProvider?.userParticipant ?? []);
-                        });
-                      }
-                      Navigator.of(context).pop();
-                      _showMarkerInfo(markerInfo, partyStatus, true);
-                    },
-                  ),
-                ),
-              // 나머지 파티 관련 UI
+// ------------------ 유저 sheet -------------------
               if (_isStructure == false)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,18 +594,13 @@ class _MapScreenState extends State<MapScreen> {
                     Text("${markerInfo.title}의 설명입니다."),
                   ],
                 ),
-              if (_inParty && _isStructure == true) ...[
+// ---------------------- 파티 중 ----------------------
+              if (_inParty && _isStructure == true) ... <Widget>[
                 SizedBox(
-                  height: 40,
-                  child: Center(
-                    child: Text(
-                      _isRequest == false ? "현재 파티원" : "수락한 파티원",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,  // 볼드체로 설정
-                        fontSize: 18,  // 글자 크기 살짝 키움
-                      ),
-                    ),
-                  ),
+                    height: 40,
+                    child: Center(
+                      child: Text(_isRequest == false ? "현재 파티원" : "수락한 파티원"),
+                    )
                 ),
                 StreamBuilder<List<String>>(
                   stream: _participantStreamController.stream,
@@ -682,53 +614,28 @@ class _MapScreenState extends State<MapScreen> {
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Text("파티원이 없습니다.");
                     }
-
-                    return Wrap(
-                      spacing: 8,  // 항목 간 수평 간격
-                      runSpacing: 8,  // 세로 간격
-                      children: snapshot.data!.map((participantName) {
-                        return Container(
-                          width: (MediaQuery.of(context).size.width / 2) - 24,  // 한 줄에 2명씩 나오도록 너비 설정
-                          child: Row(
-                            children: [
-                              // 파티원 이미지
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Color(0xFFAAD5D1), width: 2),
-                                ),
-                                child: ClipOval(
-                                  child: Image.asset(
-                                    'assets/profile/$participantName.jpg',
-                                    fit: BoxFit.cover,
-                                    width: 50,
-                                    height: 50,
-                                    errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-                                      return Icon(Icons.error, size: 50);
-                                    },
-                                  ),
-                                ),
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 4.0,
+                          children: List.generate(
+                            snapshot.data!.length,
+                                (index) => Padding(
+                              key: ValueKey('participant_${snapshot.data![index]}'),
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Text(
+                                snapshot.data![index],
+                                style: TextStyle(fontSize: 16, color: Colors.black),
                               ),
-                              SizedBox(width: 12),  // 이미지와 텍스트 사이의 수평 공간
-                              // 파티원 이름
-                              Expanded(
-                                child: Text(
-                                  participantName,
-                                  style: TextStyle(fontSize: 16, color: Colors.black),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        );
-                      }).toList(),
+                        ),
+                      ],
                     );
-
                   },
                 ),
-<<<<<<< HEAD
-=======
                 if (_inParty && !_isRequest)
                   ElevatedButton(
                     onPressed: () async {
@@ -767,62 +674,32 @@ class _MapScreenState extends State<MapScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                     ),
                   ),
->>>>>>> cde88eaeea2397d1b68c00507712e7b7be7293e3
               ],
-              // 파티 요청 버튼과 파티 나가기 버튼을 좌우로 정렬
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,  // 버튼 간에 최대한 공간을 나누어 배치
-                children: [
-                  // 파티 요청 버튼
-                  if (_inParty && !_isRequest && !_isParty) // 파티에 참여하지 않았고 요청하지 않은 경우에만 표시
-                    Container(
-                      width: 175, // 원하는 너비 설정
-                      child: FloatingActionButton(
-                        backgroundColor: Color(0xFFAAD5D1),
-                        child: Text(
-                          '파티 요청',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          await userProvider?.request(userProvider!.email!, _partyplace);
-                          setState(() {
-                            _isRequest = true;
-                          });
-                          Navigator.of(context).pop();
-                          _showMarkerInfo(markerInfo, partyStatus, true);
-                        },
-                      ),
-                    ),
-                  // 파티 나가기 버튼
-                  if ((_inParty || _isParty) && _isStructure)
-                    Container(
-                      width: 175, // 원하는 너비 설정
-                      child: FloatingActionButton(
-                        backgroundColor: Color(0xFFAAD5D1),
-                        child: Text(
-                          '파티 나가기',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          await userProvider?.setparty(userProvider!.email!, -1);
-                          Navigator.of(context).pop();
-                          if (mounted) {
-                            setState(() {
-                              pointRate = 1;
-                              _inParty = false;
-                              _isRequest = false;
-                              _canWalking = false;
-                              _isParty = false;
-                              _userParticipant.clear();
-                              message('파티가 해제되었습니다');
-                            });
-                          }
-                          _showMarkerInfo(markerInfo, partyStatus, true);
-                        },
-                      ),
-                    ),
-                ],
-              ),
+              if ( (_inParty || _isParty) && _isStructure)
+                ElevatedButton(
+                  onPressed: () async {
+                    await userProvider?.setparty(userProvider!.email!, -1);
+
+                    Navigator.of(context).pop();
+
+                    if (mounted) { // mounted 체크
+                      setState(() {
+                        pointRate = 1;
+                        _inParty = false;
+                        _isRequest = false;
+                        _canWalking = false;
+                        _isParty = false;
+                        _userParticipant.clear();
+                        message('파티가 해제되었습니다');
+                      });
+                    }
+                    _showMarkerInfo(markerInfo, partyStatus, true);
+                  },
+                  child: Text('파티 나가기'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  ),
+                ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -835,60 +712,18 @@ class _MapScreenState extends State<MapScreen> {
       },
     );
   }
-  //산책하기 눌렀을 때 메세지
-
-
 
 //----------------------------------------- !!구글 맵 !!--------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Hot Dog Walking',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,  // 볼드체
-            color: Color(0xFFAAD5D1),     // 텍스트 색상
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0, // Removes the shadow to make it flat
+        title: Text('지도 화면'),
+        backgroundColor: Color(0xFFAAD5D1),
       ),
       body: Column(
         children: [
-          Container(
-            height: 3, // Height of the border
-            color: Color(0xFFAAD5D1), // The border color
-          ),
           Flexible(
-<<<<<<< HEAD
-            child: Stack(
-              children: [
-                _isLoading
-                    ? Center(child: CircularProgressIndicator()) // userProvider 초기화 전 로딩 표시
-                    : GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _currentPosition!,
-                    zoom: 17,
-                  ),
-                  markers: _markers,
-                  circles: _circles,
-                  polylines: Set<Polyline>.of(polylines.values).union({_polyline}),
-                ),
-                // 현위치 버튼
-                Align(
-                  alignment: Alignment(0.99, 0.73),
-                  child: ClipOval(
-                    child: Material(
-                      color: Colors.orange.shade100,
-                      child: InkWell(
-                        splashColor: Colors.orange,
-                        child: SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: Icon(Icons.my_location),
-=======
               child: Stack(
                 children: [
                   _isLoading
@@ -920,19 +755,12 @@ class _MapScreenState extends State<MapScreen> {
                           onTap: () {
                             _currentCamera();
                           },
->>>>>>> cde88eaeea2397d1b68c00507712e7b7be7293e3
                         ),
                       ),
                     ),
                   ),
-<<<<<<< HEAD
-                ),
-              ],
-            ),
-=======
                 ],
               )
->>>>>>> cde88eaeea2397d1b68c00507712e7b7be7293e3
           ),
           Container(
             height: 3, // 라인의 높이
@@ -967,7 +795,7 @@ class _MapScreenState extends State<MapScreen> {
                         backgroundColor: Color(0xFFAAD5D1), // 배경색
                         foregroundColor: Colors.white, // 텍스트 색상
                       ),
-                      onPressed: _isWalking ? null : _startWalking,
+                      onPressed:_isWalking ? null : _startWalking,
                       child: Text('산책시작'),
                     ),
                     ElevatedButton(
@@ -975,7 +803,7 @@ class _MapScreenState extends State<MapScreen> {
                         backgroundColor: Color(0xFFAAD5D1), // 배경색
                         foregroundColor: Colors.white, // 텍스트 색상
                       ),
-                      onPressed: _isWalking && !_isPaused ? _pauseWalking : null,
+                      onPressed:_isWalking && !_isPaused ? _pauseWalking : null,
                       child: Text('멈춤'),
                     ),
                     ElevatedButton(
@@ -983,7 +811,7 @@ class _MapScreenState extends State<MapScreen> {
                         backgroundColor: Color(0xFFAAD5D1), // 배경색
                         foregroundColor: Colors.white, // 텍스트 색상
                       ),
-                      onPressed: _isPaused ? _restartWalking : null,
+                      onPressed:_isPaused ? _restartWalking : null,
                       child: Text('재시작'),
                     ),
                     ElevatedButton(
@@ -991,7 +819,7 @@ class _MapScreenState extends State<MapScreen> {
                         backgroundColor: Color(0xFFAAD5D1), // 배경색
                         foregroundColor: Colors.white, // 텍스트 색상
                       ),
-                      onPressed: _isWalking ? _stopWalking : null,
+                      onPressed:_isWalking ? _stopWalking : null,
                       child: Text('산책종료'),
                     ),
                   ],
@@ -1002,6 +830,5 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
-
   }
 }
