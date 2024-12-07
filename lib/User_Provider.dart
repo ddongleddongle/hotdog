@@ -15,6 +15,7 @@ class UserProvider with ChangeNotifier {
   double? _lng;
   int? _partyid;
   bool? _partyRequest;
+  String? _imagePath;
 
   // Getters
   String? get email => _email;
@@ -27,6 +28,7 @@ class UserProvider with ChangeNotifier {
   double? get lng => _lng;
   int? get partyid => _partyid;
   bool? get party_request => _partyRequest;
+  String? get imagePath => _imagePath;
 
   //late MarkerInfo markerInfo;
   late List<LatLng> userPositions = []; // LatLng 객체를 저장할 리스트
@@ -58,8 +60,7 @@ class UserProvider with ChangeNotifier {
       double? lat,
       double? lng,
       int? partyid,
-      bool? paty_request)
-  async {
+      bool? paty_request) async {
     _email = email;
     _password = password;
     _petName = petName;
@@ -168,7 +169,6 @@ class UserProvider with ChangeNotifier {
         //print("review : ${data}");
         print("리뷰 가져옴");
 
-
         for (var Review in data) {
           String content = Review['text'] ?? "Unknown Location";
           int? review = Review['review'];
@@ -184,7 +184,8 @@ class UserProvider with ChangeNotifier {
               ),
             );
           } else {
-            print('Review or ID is null for this review: $Review'); // null인 경우 로그 출력
+            print(
+                'Review or ID is null for this review: $Review'); // null인 경우 로그 출력
           }
         }
         notifyListeners(); // 상태 변경 통지
@@ -206,7 +207,7 @@ class UserProvider with ChangeNotifier {
   Future<List<MarkerInfo>> fetchLocations() async {
     try {
       final response =
-      await http.get(Uri.parse('http://116.124.191.174:15017/locations'));
+          await http.get(Uri.parse('http://116.124.191.174:15017/locations'));
 
       // API 응답 상태 코드 확인
       if (response.statusCode == 200) {
@@ -218,15 +219,14 @@ class UserProvider with ChangeNotifier {
         // JSON 데이터를 MarkerInfo로 변환
         return jsonResponse
             .map((location) => MarkerInfo(
-          title: location['name'],
-          description: location['description'],
-          position: LatLng(location['lat'], location['lng']),
-          visible: true,
-        ))
+                  title: location['name'],
+                  description: location['description'],
+                  position: LatLng(location['lat'], location['lng']),
+                  visible: true,
+                ))
             .toList();
       } else {
-        print(
-            'Failed to load locations: ${response.statusCode}');
+        print('Failed to load locations: ${response.statusCode}');
         throw Exception('Failed to load locations');
       }
     } catch (e) {
@@ -319,7 +319,8 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> participant(String title, int party_request) async {
-    final url = 'http://116.124.191.174:15017/participant'; // 여기에 API 엔드포인트를 입력하세요
+    final url =
+        'http://116.124.191.174:15017/participant'; // 여기에 API 엔드포인트를 입력하세요
 
     print("파티 참가자 파라미터 : ${title} ${party_request}");
     userParticipant.clear();
@@ -331,17 +332,18 @@ class UserProvider with ChangeNotifier {
           'Content-Type': 'application/json',
         },
         body: json.encode({
-          'name' : title,
-          'party_request' : party_request,
+          'name': title,
+          'party_request': party_request,
         }),
       );
 
       //print("--------------참가자 함수 작동");
 
-      final Map<String, dynamic> data = jsonDecode(response.body); // JSON 객체로 파싱
+      final Map<String, dynamic> data =
+          jsonDecode(response.body); // JSON 객체로 파싱
       final List<dynamic> participants = data['results']; // 'results' 키로 접근
 
-      for(var participant in participants){
+      for (var participant in participants) {
         String pet_name = participant['pet_name'] ?? 'Unknown Participant';
         int? party_id = participant['party_id'];
 
@@ -375,7 +377,7 @@ class UserProvider with ChangeNotifier {
         },
         body: json.encode({
           'email': email,
-          'name' : title,
+          'name': title,
         }),
       );
       if (response.statusCode == 200) {
@@ -400,7 +402,7 @@ class UserProvider with ChangeNotifier {
         },
         body: json.encode({
           'email': email,
-          'party_id' : partyid != 0 ? partyid : null,
+          'party_id': partyid != 0 ? partyid : null,
         }),
       );
 
@@ -426,7 +428,7 @@ class UserProvider with ChangeNotifier {
         },
         body: json.encode({
           'email': email,
-          'name' : name,
+          'name': name,
         }),
       );
 
@@ -439,7 +441,7 @@ class UserProvider with ChangeNotifier {
 
       print("request : ${data}");
 
-      for(var request in data){
+      for (var request in data) {
         int? party_request = request['party_request'];
 
         if (party_request != null) {

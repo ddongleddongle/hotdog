@@ -229,26 +229,23 @@ class _MapScreenState extends State<MapScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        int earnedCoins =
-            (_totalDistance / 10).floor() * pointRate!; // (10미터당 1코인) * 포인트 배율
+        int earnedCoins = (_totalDistance / 10).floor() * pointRate!; // (10미터당 1코인) * 포인트 배율
 
         return AlertDialog(
           title: Text('산책 종료'),
           content: Text(
             '경과 시간: ${_secondsElapsed ~/ 60}:${_secondsElapsed % 60 < 10 ? '0' : ''}${_secondsElapsed % 60}\n'
-            '거리: ${_totalDistance.toStringAsFixed(2)} m\n'
-            '획득한 코인: $earnedCoins',
+                '거리: ${_totalDistance.toStringAsFixed(2)} m\n'
+                '획득한 코인: $earnedCoins',
           ),
           actions: [
             TextButton(
               onPressed: () async {
-                bool isPhotoVerified = await auth();
+                bool isPhotoVerified = false;
                 // UserProvider를 통해 업데이트
-                int finalEarnedCoins =
-                    isPhotoVerified ? earnedCoins : (earnedCoins / 2).floor();
+                int finalEarnedCoins = isPhotoVerified ? earnedCoins : (earnedCoins / 2).floor();
 
-                double newTotalDistance =
-                    (userProvider?.totaldistance ?? 0.0) + _totalDistance;
+                double newTotalDistance = (userProvider?.totaldistance ?? 0.0) + _totalDistance;
                 await userProvider?.updateUserCoinsAndDistance(
                   (userProvider?.coins ?? 0) + finalEarnedCoins,
                   newTotalDistance,
@@ -269,7 +266,8 @@ class _MapScreenState extends State<MapScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Home(),
+                      builder: (context) => Home(
+                      ),
                     ),
                   );
                 },
