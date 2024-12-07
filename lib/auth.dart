@@ -17,7 +17,8 @@ Future<bool> auth(BuildContext context) async {
   }
 
   final userProvider = Provider.of<UserProvider>(context, listen: false);
-  String? savedImagePath = userProvider.imagePath;
+  String? savedImagePath = image.path;
+      //userProvider.imagePath;
 
   if (savedImagePath == null) {
     print("저장된 이미지가 없습니다.");
