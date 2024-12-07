@@ -16,19 +16,19 @@ Future<bool> auth(BuildContext context) async {
     return false;
   }
 
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
-  String? savedImagePath = image.path;
-  //userProvider.imagePath;
-
-  if (savedImagePath == null) {
-    print("저장된 이미지가 없습니다.");
-    return false;
-  }
+  // final userProvider = Provider.of<UserProvider>(context, listen: false);
+  // String? savedImagePath = image.path;
+  // //userProvider.imagePath;
+  //
+  // if (savedImagePath == null) {
+  //   print("저장된 이미지가 없습니다.");
+  //   return false;
+  // }
 
   // 3. 저장된 이미지와 찍은 이미지를 비교
   File newImage1 = File(image.path);
   File newImage2 = File(image.path);
-  File savedImage = File(savedImagePath);
+  // File savedImage = File(savedImagePath);
 
   bool isSameAnimal = await verifyAnimal(newImage1, newImage2);
 
