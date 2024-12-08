@@ -106,12 +106,12 @@ class _MapScreenState extends State<MapScreen> {
     mapController.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: _currentPosition!, zoom: 17),
     ));
-    _addCircle();
     //유저 정보 업데이트
     userProvider?.updatePosition(_currentPosition!.latitude, _currentPosition!.longitude); //DB에 내 위치 저장
     await _fetchUserPositions();
     await _fetchLocations();
     await _addMarkers();
+    _addCircle();
     _startTime();
   }
 
@@ -140,7 +140,7 @@ class _MapScreenState extends State<MapScreen> {
     _getCurrentLocation();
     _fetchUserPositions();
     _fetchLocations();
-    _addMarkers();
+    _updateMarkers();
   }
   
   //주기적인 시간으로 함수 작동
@@ -439,7 +439,135 @@ class _MapScreenState extends State<MapScreen> {
       });
     }
   }
-  
+
+  Future<void> _updateMarkers() async {
+    try {
+      // 아이콘 생성
+      final BitmapDescriptor customIcon = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(90, 90)),
+        'assets/images/userpet.png',
+      );
+
+      // 현재 위치 마커 업데이트
+      if (!_markers.any((marker) => marker.markerId.value == 'currentLocation')) {
+        _markers.add(Marker(
+          markerId: MarkerId('currentLocation'),
+          position: _currentPosition!,
+          icon: customIcon,
+          infoWindow: InfoWindow(title: '현재 위치'),
+        ));
+      } else {
+        _markers = _markers.map((marker) {
+          if (marker.markerId.value == 'currentLocation') {
+            return marker.copyWith(positionParam: _currentPosition!);
+          }
+          return marker;
+        }).toSet();
+      }
+
+      // 구조물 마커 (파란색)
+      for (var markerInfo in _markerInfos) {
+        bool _party = await _checkProximityToMarkers(markerInfo);
+        int? colorValue = await userProvider?.locationColor(markerInfo.title);
+
+        // 색상을 적절한 hue 값으로 변환
+        double hue;
+        if (colorValue != null) {
+          if (colorValue <= 10) {
+            hue = BitmapDescriptor.hueBlue;
+          } else if (colorValue > 10 && colorValue <= 20) {
+            hue = BitmapDescriptor.hueGreen;
+          } else {
+            hue = BitmapDescriptor.hueAzure;
+          }
+        } else {
+          hue = BitmapDescriptor.hueRed; // 기본 색상 설정
+        }
+
+        // 마커가 이미 존재하는지 확인
+        Marker existingMarker = _markers.firstWhere(
+              (marker) => marker.markerId == MarkerId(markerInfo.title),
+          orElse: () => Marker(
+            markerId: MarkerId(''), // 기본 ID를 가진 빈 마커
+            position: LatLng(0, 0), // 기본 위치
+            icon: BitmapDescriptor.defaultMarker, // 기본 아이콘
+          ),
+        );
+
+        if (existingMarker.markerId.value == '') {
+          // 마커가 존재하지 않는 경우 추가
+          _markers.add(Marker(
+            markerId: MarkerId(markerInfo.title),
+            position: markerInfo.position,
+            icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+            infoWindow: InfoWindow(title: markerInfo.title, snippet: markerInfo.description),
+            onTap: () {
+              _onMarkerTapped(markerInfo, _party, true);
+            },
+          ));
+        } else {
+          // 마커가 존재하는 경우 위치 및 아이콘 업데이트
+          _markers = _markers.map((marker) {
+            if (marker.markerId == MarkerId(markerInfo.title)) {
+              return marker.copyWith(
+                positionParam: markerInfo.position,
+                iconParam: BitmapDescriptor.defaultMarkerWithHue(hue),
+              );
+            }
+            return marker;
+          }).toSet();
+        }
+      }
+
+      // 사용자 마커 (visible 동적 설정)
+      for (var userMarker in _userMarkers) {
+
+        bool isInParty = _userParticipant.any((participant) => participant == userMarker.title);
+
+        // 마커가 이미 존재하는지 확인
+        Marker existingMarker = _markers.firstWhere(
+              (marker) => marker.markerId == MarkerId(userMarker.title),
+          orElse: () => Marker(
+            markerId: MarkerId(''), // 기본 ID를 가진 빈 마커
+            position: LatLng(0, 0), // 기본 위치
+            icon: BitmapDescriptor.defaultMarker, // 기본 아이콘
+          ),
+        );
+
+        if (existingMarker.markerId.value == '') {
+          // 마커가 존재하지 않는 경우 추가
+          _markers.add(Marker(
+            markerId: MarkerId(userMarker.title),
+            position: userMarker.position,
+            visible: isInParty, // 같이 파티면 보임
+            icon: customIcon, // 커스텀 아이콘
+            onTap: () {
+              _onMarkerTapped(userMarker, false, false);
+            },
+          ));
+        } else {
+          // 마커가 존재하는 경우 위치 및 아이콘 업데이트
+          _markers = _markers.map((marker) {
+            if (marker.markerId == MarkerId(userMarker.title)) {
+              return marker.copyWith(
+                positionParam: userMarker.position,
+                visibleParam: isInParty,
+                //iconParam: customIcon,
+              );
+            }
+            return marker;
+          }).toSet();
+        }
+
+      }
+
+      setState(() {});
+    } catch (e) {
+      print('Error loading custom icon: $e'); // 오류 처리
+    }
+  }
+
+
   //현재 유저 / 장소 리스트에 있는 마커들을 화면에 표시
   Future<void> _addMarkers() async {
     _markers.clear();

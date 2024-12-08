@@ -35,8 +35,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    // _initPedometer(); // Initialize pedometer
-    // _requestLocationPermission();
+    _requestLocationPermission();
     // _loadStepData();
   }
 
