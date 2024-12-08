@@ -37,7 +37,17 @@ class _MyInfoState extends State<MyInfo> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Stack(
+      body:
+        GestureDetector(
+        onHorizontalDragEnd: (details) {
+      // 좌우 스와이프 시 화면 전환
+      if (details.primaryVelocity! > 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Community()),
+        );
+      }
+    },child: Stack(
         children: [
           // Background image with scaling adjustment
           Positioned.fill(
@@ -88,6 +98,7 @@ class _MyInfoState extends State<MyInfo> {
           ),
         ],
       ),
+        ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
       floatingActionButton: _buildWalkingButton(context), // 산책 버튼 추가
       floatingActionButtonLocation: FloatingActionButtonLocation

@@ -24,8 +24,9 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool isLoggedIn = true;
-  int currentSteps = 1000; // Initial step count
-  int stepGoal = 2660; // Step goal
+  int currentSteps = 0; // Initial step count
+  int stepGoal = 2000; // Step goal
+  UserProvider? userProvider;
   double? lat;
   double? lng;
   late SharedPreferences prefs;
@@ -34,9 +35,9 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    _initPedometer(); // Initialize pedometer
-    _requestLocationPermission();
-    _loadStepData();
+    // _initPedometer(); // Initialize pedometer
+    // _requestLocationPermission();
+    // _loadStepData();
   }
 
   _requestLocationPermission() async {
@@ -75,16 +76,16 @@ class _HomeState extends State<Home> {
     });
   }
 
-  _loadStepData() async {
+  _loadStepData(double currentSteps, UserProvider user) async {
     prefs = await SharedPreferences.getInstance();
     String? lastDate = prefs.getString('lastDate');
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
+    print(lastDate);
     if (lastDate == null || lastDate != today) {
       currentSteps = 0;
       prefs.setString('lastDate', today);
-    } else {
-      currentSteps = prefs.getInt('currentSteps') ?? 0;
+      int currentCoins = user.coins ?? 0;
+      userProvider?.updateUserCoinsAndDistance(currentCoins, currentSteps);
     }
   }
 
@@ -109,8 +110,9 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context);
-
-    double progress = 1000 / stepGoal;
+    double totalDistance = user.totaldistance ?? 0.0;
+    _loadStepData(totalDistance, user);
+    double progress = totalDistance / stepGoal;
     progress = progress > 1.0 ? 1.0 : progress;
 
     return Scaffold(
@@ -223,14 +225,14 @@ class _HomeState extends State<Home> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  '${_convertStepsToKm(currentSteps).toStringAsFixed(2)} km',
+                                  '${(totalDistance/ 1000).toStringAsFixed(2)} km',
                                   style: TextStyle(
                                     fontSize: 30,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
-                                  '목표: ${(stepGoal * 0.75 / 1000).toStringAsFixed(2)} km',
+                                  '목표: ${(stepGoal / 1000).toStringAsFixed(2)} km',
                                   style: TextStyle(
                                     fontSize: 22,
                                     color: Colors.grey,
