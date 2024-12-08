@@ -53,31 +53,47 @@ class _OrderSectionState extends State<OrderSection> {
               color: const Color(0xFFF6F6F9),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.remove, color: Color(0xFFAAD5D1)),
-                  onPressed: _decrementCount,
-                ),
-                const SizedBox(width: 14),
-                Text(
-                  '$_itemCount', // 현재 아이템 수 표시
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFDCDCE4),
+            child: SizedBox(
+              height: 25,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 25, // Row와 같은 높이 설정
+                    width: 25, // 원하는 너비 설정
+                    child: IconButton(
+                      icon: Icon(Icons.remove, color: Color(0xFFAAD5D1), size: 15), // 아이콘 크기 설정
+                      onPressed: _decrementCount,
+                      padding: EdgeInsets.zero, // 패딩 제거
+                      constraints: BoxConstraints(), // 기본 크기 제약 조건 제거
+                    ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                IconButton(
-                  icon: Icon(Icons.add, color: Color(0xFFAAD5D1)),
-                  onPressed: _incrementCount,
-                ),
-              ],
+                  const SizedBox(width: 20),
+                  Text(
+                    '$_itemCount', // 현재 아이템 수 표시
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFDCDCE4),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  SizedBox(
+                    height: 25, // Row와 같은 높이 설정
+                    width: 25, // 원하는 너비 설정
+                    child: IconButton(
+                      icon: Icon(Icons.add, color: Color(0xFFAAD5D1), size: 15), // 아이콘 크기 설정
+                      onPressed: _incrementCount,
+                      padding: EdgeInsets.zero, // 패딩 제거
+                      constraints: BoxConstraints(), // 기본 크기 제약 조건 제거
+                    ),
+                  ),
+                ],
+              ),
             ),
+
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 20),
           Expanded(
             child: ElevatedButton(
               onPressed: () {},
@@ -86,29 +102,33 @@ class _OrderSectionState extends State<OrderSection> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.zero,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Add to order',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+              child: SizedBox(
+                height: 50,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:[
+                    const Text(
+                      'Add to order',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '$totalPrice Won', // 총 가격 표시
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                    const SizedBox(width: 8),
+                    Text(
+                      '$totalPrice Won', // 총 가격 표시
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+
               ),
             ),
           ),

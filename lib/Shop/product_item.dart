@@ -8,8 +8,8 @@ class ProductItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 120,
-      height: 120,
+      width: 100,
+      height: 100,
       decoration: BoxDecoration(
         color: Color.fromARGB(255, 200, 230, 230),
         borderRadius: BorderRadius.circular(20),
