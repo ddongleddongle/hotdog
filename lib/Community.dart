@@ -19,7 +19,7 @@ class Community extends StatefulWidget {
 class _CommunityState extends State<Community> {
   List<dynamic> reviews = [];
   Position? userPosition; // 사용자 위치 저장
-  String selectedFilter = 'review'; // 기본적으로 'review' 필터를 선택
+  String selectedFilter = 'distance'; // 기본적으로 'distance' 필터를 선택
 
   @override
   void initState() {
@@ -77,11 +77,17 @@ class _CommunityState extends State<Community> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("커뮤니티"),
+        backgroundColor: Color(0xFFAAD5D1),
+        title: Text(
+          "커뮤니티",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
           DropdownButton<String>(
             value: selectedFilter,
-            icon: Icon(Icons.filter_list),
+            icon: Icon(Icons.filter_list), // 아이콘 색상도 흰색으로
             onChanged: (String? newValue) {
               setState(() {
                 selectedFilter = newValue!;
@@ -92,7 +98,9 @@ class _CommunityState extends State<Community> {
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
-                child: Text(value == 'review' ? '리뷰 기준' : '거리 기준'),
+                child: Text(
+                  value == 'review' ? '리뷰 기준' : '거리 기준',
+                ),
               );
             }).toList(),
           ),
@@ -140,17 +148,27 @@ class _CommunityState extends State<Community> {
                   child: Column(
                     children: [
                       ListTile(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(10), // 모서리 둥글게 설정 (값을 변경하여 둥글기를 조절)
+                          child: Image.asset(
+                            'assets/location/${reviews[index]['name'] ?? 'default_image'}.jpg',
+                            width: 75,  // 너비 조정
+                            height: 60, // 높이 조정
+                            fit: BoxFit.cover, // 이미지 비율에 맞게 잘라서 보여줌
+                          ),
+                        ),
                         title: Text(reviews[index]['name'] ?? 'No name'),
                         subtitle: Text(
                           '${reviews[index]['description'] ?? 'No Description'}\n현재 위치에서 거리: ${distance.toStringAsFixed(2)} km\n리뷰 평균: ${avgReview.toStringAsFixed(1)}',
                         ),
-                        onTap: (){
+                        onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => ReviewDetail(locationId: reviews[index]['id']),
+                            MaterialPageRoute(
+                              builder: (context) => ReviewDetail(locationId: reviews[index]['id']),
                             ),
                           );
-                        }
+                        },
                       ),
                       Divider(thickness: 1), // 구분선 추가
                     ],
