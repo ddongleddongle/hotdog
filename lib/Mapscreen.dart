@@ -463,7 +463,6 @@ class _MapScreenState extends State<MapScreen> {
           position: markerInfo.position,
           icon: BitmapDescriptor.defaultMarkerWithHue(hue),
           onTap: () {
-            userProvider?.incrementlocation(markerInfo.title);  //조회수 증가
             _onMarkerTapped(markerInfo, _party, true);
           },
         ));
@@ -494,6 +493,7 @@ class _MapScreenState extends State<MapScreen> {
 
   //마커를 탭 했을 때 작동함수
   void _onMarkerTapped(MarkerInfo markerInfo, bool _party, bool _isStructure) {
+    userProvider?.incrementlocation(markerInfo.title);  //조회수 증가
     _showMarkerInfo(markerInfo, _party, _isStructure); // 마커 정보를 보여주며 party 상태 전달
   }
 
@@ -573,10 +573,20 @@ class _MapScreenState extends State<MapScreen> {
                             height: 100,
                             fit: BoxFit.cover,
                             errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-                              return SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Icon(Icons.error),
+                              // .jpg 파일이 존재하지 않을 경우 .png 파일 시도
+                              return Image.asset(
+                                'assets/location/${markerInfo.title}.png',
+                                width: 150,
+                                height: 100,
+                                fit: BoxFit.cover,
+                                errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                                  // 두 이미지 모두 실패할 경우 에러 아이콘 표시
+                                  return SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: Icon(Icons.error),
+                                  );
+                                },
                               );
                             },
                           ),
@@ -737,59 +747,85 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ],
               // 파티 요청 버튼
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,  // 버튼 간에 최대한 공간을 나누어 배치
-                children: [
-                  // 파티 요청 버튼
-                  if (_inParty && !_isRequest && !_isParty) // 파티에 참여하지 않았고 요청하지 않은 경우에만 표시
-                    Container(
-                      width: 175, // 원하는 너비 설정
-                      child: FloatingActionButton(
-                        backgroundColor: Color(0xFFAAD5D1),
-                        child: Text(
-                          '파티 요청',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          await userProvider?.request(userProvider!.email!, _partyplace);
-                          setState(() {
-                            _isRequest = true;
-                          });
-                          Navigator.of(context).pop();
-                          _showMarkerInfo(markerInfo, partyStatus, true);
-                        },
-                      ),
-                    ),
-                  // 파티 나가기 버튼
-                  if ((_inParty || _isParty) && _isStructure)
-                    Container(
-                      width: 175, // 원하는 너비 설정
-                      child: FloatingActionButton(
-                        backgroundColor: Color(0xFFAAD5D1),
-                        child: Text(
-                          '파티 나가기',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          await userProvider?.setparty(userProvider!.email!, -1);
-                          Navigator.of(context).pop();
-                          if (mounted) {
+              if(_isStructure)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,  // 버튼 간에 최대한 공간을 나누어 배치
+                  children: [
+                    // 파티 요청 버튼
+                    if (_inParty && !_isRequest && !_isParty) // 파티에 참여하지 않았고 요청하지 않은 경우에만 표시
+                      Container(
+                        width: 175, // 원하는 너비 설정
+                        child: FloatingActionButton(
+                          backgroundColor: Color(0xFFAAD5D1),
+                          child: Text(
+                            '파티 요청',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () async {
+                            await userProvider?.request(userProvider!.email!, _partyplace);
                             setState(() {
-                              pointRate = 1;
-                              _inParty = false;
-                              _isRequest = false;
-                              _canWalking = false;
-                              _isParty = false;
-                              _userParticipant.clear();
-                              message('파티가 해제되었습니다');
+                              _isRequest = true;
                             });
-                          }
-                          _showMarkerInfo(markerInfo, partyStatus, true);
-                        },
+                            Navigator.of(context).pop();
+                            _showMarkerInfo(markerInfo, partyStatus, true);
+                          },
+                        ),
                       ),
-                    ),
-                ],
-              ),
+                    // 파티 나가기 버튼
+                    if ((_inParty || _isParty) && _isStructure)
+                      Container(
+                        width: 175, // 원하는 너비 설정
+                        child: FloatingActionButton(
+                          backgroundColor: Color(0xFFAAD5D1),
+                          child: Text(
+                            '파티 나가기',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () async {
+                            await userProvider?.setparty(userProvider!.email!, -1);
+                            Navigator.of(context).pop();
+                            if (mounted) {
+                              setState(() {
+                                pointRate = 1;
+                                _inParty = false;
+                                _isRequest = false;
+                                _canWalking = false;
+                                _isParty = false;
+                                _userParticipant.clear();
+                                message('파티가 해제되었습니다');
+                              });
+                            }
+                            _showMarkerInfo(markerInfo, partyStatus, true);
+                          },
+                        ),
+                      ),
+                    // -------------- 산책 시작 ----------------
+                    if (_isRequest && _canWalking)
+                      Container(
+                        width: 175, // 원하는 너비 설정
+                        child: FloatingActionButton(
+                          backgroundColor: Color(0xFFAAD5D1),
+                          child: Text(
+                            '파티 시작',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                            if (mounted) { // mounted 체크
+                              setState(() {
+                                message('파티가 시작되었습니다. 추가 포인트 x${pointRate!*10}%');
+                                _inParty = false;
+                                _isRequest = false;
+                                _canWalking = false;
+                                _isParty = true;
+                                pointRate = _userParticipant.length;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                  ],
+                ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();

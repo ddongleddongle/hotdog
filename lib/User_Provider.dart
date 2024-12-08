@@ -352,6 +352,9 @@ class UserProvider with ChangeNotifier {
             }
           }
         }
+        // for(var a in userMarkers){
+        //   print('가져온 유저들 : ${a.title}');
+        // }
       } else {
         throw Exception('Failed to fetch users position');
       }
