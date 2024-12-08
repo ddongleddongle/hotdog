@@ -115,7 +115,7 @@ class _HomeState extends State<Home> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    double radius = screenWidth * 0.3;
+    double radius = screenWidth * 0.28;
     double heightLimit = screenHeight * 0.3;
     radius = radius > heightLimit ? heightLimit : radius;
 
@@ -165,14 +165,46 @@ class _HomeState extends State<Home> {
                       offset: Offset(0, 3),
                     ),
                   ],
+                  border: Border.all(
+                    color: Color(0xFFAAD5D1), // Border color
+                    width: 4, // Border width
+                  ),
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Profile Section
-                      _buildProfileSection(user),
+                      SizedBox(height: 20), // Added space to make room for the image above the panel
+                      Row(
+                        children: [
+                          SizedBox(width: 25),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                isLoggedIn
+                                    ? _buildProfileText('이름: ${user.petName}')
+                                    : _buildProfileText('로그인 하세요'),
+                                isLoggedIn
+                                    ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
+                                    : SizedBox(),
+                                isLoggedIn
+                                    ? _buildProfileText('보유 포인트: ${user.coins}')
+                                    : SizedBox(),
+                                !isLoggedIn
+                                    ? _buildProfileText('로그인을 하여 정보를 확인하세요')
+                                    : SizedBox(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Container(
+                        height: 2, // 경계선의 두께
+                        color: Color(0xFFAAD5D1), // 경계선 색상
+                      ),
                       SizedBox(height: 20),
                       // Circular progress for steps
                       CircularPercentIndicator(
@@ -182,7 +214,7 @@ class _HomeState extends State<Home> {
                         lineWidth: 25,
                         animation: true,
                         animateFromLastPercent: true,
-                        progressColor: Colors.black,
+                        progressColor: Color(0xFFAAD5D1),
                         backgroundColor: Color(0xFFF1F4F8),
                         center: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -209,6 +241,24 @@ class _HomeState extends State<Home> {
                 ),
               ),
             ),
+            // Profile image positioned at the top boundary of the slide panel with border
+            Positioned(
+              top: screenHeight * 0.255 - 40, // This ensures the image is just above the slide panel
+              left: (screenWidth - 120) / 2, // Center horizontally
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle, // Circle shape
+                  border: Border.all(
+                    color: Color(0xFFAAD5D1), // Border color around the image
+                    width: 5, // Border width
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 60, // Size of the circle (profile image)
+                  backgroundImage: AssetImage('assets/profile/${user.petName}.jpg'),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -232,41 +282,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Profile Section inside white slide bar
-  Widget _buildProfileSection(UserProvider user) {
-    return Container(
-      child: Row(
-        children: [
-          SizedBox(width: 25),
-          Container(
-            width: 80,
-            height: 80,
-            child: Image.asset('assets/images/pet.png', fit: BoxFit.cover),
-          ),
-          SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                isLoggedIn
-                    ? _buildProfileText('이름: ${user.petName}')
-                    : _buildProfileText('로그인 하세요'),
-                isLoggedIn
-                    ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
-                    : SizedBox(),
-                isLoggedIn
-                    ? _buildProfileText('보유 포인트: ${user.coins}')
-                    : SizedBox(),
-                !isLoggedIn
-                    ? _buildProfileText('로그인을 하여 정보를 확인하세요')
-                    : SizedBox(),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildProfileText(String text) {
     return Padding(
@@ -276,7 +291,7 @@ class _HomeState extends State<Home> {
         textAlign: TextAlign.start,
         style: TextStyle(
           color: Color(0xFF62807D),
-          fontSize: 16,
+          fontSize: 19,
           fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
         ),
