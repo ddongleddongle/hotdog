@@ -229,11 +229,31 @@ class _MapScreenState extends State<MapScreen> {
         int earnedCoins = (_totalDistance / 10).floor() * pointRate!; // (10미터당 1코인) * 포인트 배율
 
         return AlertDialog(
-          title: Text('산책 종료'),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '산책 종료',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, // 텍스트 굵게
+                  fontSize: 20, // 텍스트 크기 조정
+                ),
+              ),
+              SizedBox(height: 8), // 제목과 경계선 사이에 간격 추가
+              Container(
+                height: 1, // 경계선의 두께
+                color: Color(0xFFAAD5D1), // 경계선 색상
+              ),
+            ],
+          ),
           content: Text(
             '경과 시간: ${_secondsElapsed ~/ 60}:${_secondsElapsed % 60 < 10 ? '0' : ''}${_secondsElapsed % 60}\n'
                 '거리: ${_totalDistance.toStringAsFixed(2)} m\n'
                 '획득한 코인: $earnedCoins',
+          ),
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: Color(0xFFAAD5D1), width: 3), // 경계 색상 및 두께 설정
+            borderRadius: BorderRadius.circular(10), // 경계에 둥근 모서리 설정
           ),
           actions: [
             TextButton(
@@ -246,30 +266,29 @@ class _MapScreenState extends State<MapScreen> {
                 );
                 await userProvider?.setparty(userProvider!.email!, -1);
                 setState(() {
-                  userProvider?.coins = (userProvider?.coins ?? 0) +
-                      earnedCoins; // 여기서 coins 값을 업데이트합니다.
-                  userProvider?.totaldistance =
-                      (userProvider?.totaldistance ?? 0) + newTotalDistance;
+                  userProvider?.coins = (userProvider?.coins ?? 0) + earnedCoins; // 여기서 coins 값을 업데이트합니다.
+                  userProvider?.totaldistance = (userProvider?.totaldistance ?? 0) + newTotalDistance;
                 });
 
                 Navigator.of(context).pop(); // 다이얼로그 닫기
-                MaterialPageRoute(builder: (context) => Home());
+                // Home 화면으로 돌아가기
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Home()),
+                );
               },
-              child: TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Home(
-                      ),
-                    ),
-                  );
-                },
-                child: Text("확인"),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Color(0xFFAAD5D1), // 글자 색상
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8), // 버튼 모서리 둥글게 만들기
+                ),
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24), // 버튼 안의 패딩 조정
               ),
+              child: Text("확인"),
             ),
           ],
         );
+
       },
     );
 
@@ -686,7 +705,13 @@ class _MapScreenState extends State<MapScreen> {
                 SizedBox(
                   height: 40,
                   child: Center(
-                    child: Text(_isRequest == false ? "현재 파티원" : "수락한 파티원"),
+                    child: Text(
+                      _isRequest == false ? "현재 파티원" : "수락한 파티원",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,  // 볼드체로 설정
+                        fontSize: 18,  // 글자 크기 살짝 키움
+                      ),
+                    ),
                   ),
                 ),
                 StreamBuilder<List<String>>(
@@ -806,20 +831,60 @@ class _MapScreenState extends State<MapScreen> {
                         child: FloatingActionButton(
                           backgroundColor: Color(0xFFAAD5D1),
                           child: Text(
-                            '파티 시작',
-                            style: TextStyle(color: Colors.white),
+                          '파티 시작',
+                          style: TextStyle(color: Colors.white),
                           ),
                           onPressed: () async {
                             Navigator.of(context).pop();
                             if (mounted) { // mounted 체크
                               setState(() {
-                                message('파티가 시작되었습니다. 추가 포인트 x${pointRate!*10}%');
-                                _inParty = false;
-                                _isRequest = false;
-                                _canWalking = false;
-                                _isParty = true;
-                                pointRate = _userParticipant.length;
+                              _inParty = false;
+                              _isRequest = false;
+                              _canWalking = false;
+                              _isParty = true;
+                              pointRate = _userParticipant.length;
                               });
+
+                              // 팝업창 띄우기
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      side: BorderSide(color: Color(0xFFAAD5D1), width: 4.0),
+                                    ),
+                                    title: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '알림',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        Divider(
+                                          color: Color(0xFFAAD5D1),
+                                          thickness: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    content: Text('파티가 시작되었습니다. 추가 포인트 x${pointRate! * 10}%'),
+                                    actions: <Widget>[
+                                      ElevatedButton(
+                                        style: ButtonStyle(
+                                          backgroundColor: MaterialStateProperty.all(Color(0xFFAAD5D1)),
+                                          foregroundColor: MaterialStateProperty.all(Colors.white),
+                                          shadowColor: MaterialStateProperty.all(Colors.black),
+                                          elevation: MaterialStateProperty.all(5), // 그림자 높이 설정
+                                        ),
+                                        child: Text('확인'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             }
                           },
                         ),
@@ -844,11 +909,22 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('지도 화면'),
-        backgroundColor: Color(0xFFAAD5D1),
+        title: Text(
+          'Hot Dog Walking',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,  // 볼드체
+            color: Color(0xFFAAD5D1),     // 텍스트 색상
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Column(
         children: [
+          Container(
+            height: 3, // Height of the border
+            color: Color(0xFFAAD5D1), // The border color
+          ),
           Flexible(
             child: Stack(
               children: [
@@ -867,12 +943,12 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                 // 현위치 버튼
                 Align(
-                  alignment: Alignment(0.99, 0.73),
+                  alignment: Alignment(0.98, 0.63),
                   child: ClipOval(
                     child: Material(
-                      color: Colors.orange.shade100,
+                      color: Color(0xFFAAD5D1),
                       child: InkWell(
-                        splashColor: Colors.orange,
+                        splashColor: Color(0xFFAAD5D1),
                         child: SizedBox(
                           width: 56,
                           height: 56,
