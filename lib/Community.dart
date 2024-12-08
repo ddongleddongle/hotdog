@@ -1,84 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:software/MyInfo.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
-import 'welcome_header.dart';
-import 'category_button.dart';
-import 'product_grid.dart';
-import '../User_Provider.dart';
-import '../walking.dart'; // Walking 페이지를 임포트합니다.
-import 'ProductClass.dart'; // Product 모델을 임포트합니다.
-import '../Home.dart';
-import '../MyInfo.dart';
-import '../test.dart';
-import '../Community.dart';
-import '../Mapscreen.dart';
+import 'package:software/Walking.dart';
+import 'Home.dart';
+import 'Login.dart';
+import 'QnA.dart';
+import 'MyInfoModi.dart';
+import 'Shop/Shop.dart';
+import 'User_Provider.dart';
+import 'Community.dart';
+import 'MyInfo.dart';
+import 'Mapscreen.dart';
+import 'Walking.dart';
+import 'test.dart';
 
-class Shop extends StatefulWidget {
-  const Shop({Key? key}) : super(key: key);
-
+class Community extends StatefulWidget {
   @override
-  _ShopState createState() => _ShopState();
+  _CommunityState createState() => _CommunityState();
 }
 
-class _ShopState extends State<Shop> {
-  List<ProductClass> products = [];
-  bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchProducts();
-  }
-
-  Future<void> fetchProducts() async {
-    try {
-      final response =
-          await http.get(Uri.parse('http://116.124.191.174:15017/shop'));
-
-      if (response.statusCode == 200) {
-        final List<dynamic> productList =
-            json.decode(response.body)['products'];
-        setState(() {
-          products =
-              productList.map((json) => ProductClass.fromJson(json)).toList();
-          isLoading = false; // 데이터 로딩 완료
-        });
-      } else {
-        throw Exception('Failed to load products');
-      }
-    } catch (error) {
-      print('Error fetching products: $error');
-      setState(() {
-        isLoading = false; // 에러 발생 시 로딩 종료
-      });
-    }
-  }
-
+class _CommunityState extends State<Community> {
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(
+        context); // Provider를 사용하여 사용자 정보 가져오기
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 59, 18, 163),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const WelcomeHeader(),
-                const SizedBox(height: 27),
-                const CategoryButton(),
-                const SizedBox(height: 29),
-                isLoading
-                    ? Center(child: CircularProgressIndicator())
-                    : ProductGrid(products: products), // ProductGrid에 상품 목록 전달
-                const SizedBox(height: 57),
-              ],
-            ),
-          ),
-        ),
+      body: Stack(
+        children: [
+          // 다른 UI 요소들...
+        ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
       floatingActionButton: _buildWalkingButton(context), // 산책 버튼 추가
@@ -90,7 +40,7 @@ class _ShopState extends State<Shop> {
   BottomNavigationBar _buildBottomNavigationBar(context) {
     final user = Provider.of<UserProvider>(context);
     return BottomNavigationBar(
-      currentIndex: 1,
+      currentIndex: 3,
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
