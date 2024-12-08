@@ -258,15 +258,17 @@ class _MapScreenState extends State<MapScreen> {
           actions: [
             TextButton(
               onPressed: () async {
+                bool isPhotoVerified = false;
+                int finalEarnedCoins = isPhotoVerified ? earnedCoins : (earnedCoins / 2).floor();
                 // UserProvider를 통해 업데이트
                 double newTotalDistance = (userProvider?.totaldistance ?? 0.0) + _totalDistance;
                 await userProvider?.updateUserCoinsAndDistance(
-                  (userProvider?.coins ?? 0) + earnedCoins,
+                  (userProvider?.coins ?? 0) + finalEarnedCoins,
                   newTotalDistance,
                 );
                 await userProvider?.setparty(userProvider!.email!, -1);
                 setState(() {
-                  userProvider?.coins = (userProvider?.coins ?? 0) + earnedCoins; // 여기서 coins 값을 업데이트합니다.
+                  userProvider?.coins = (userProvider?.coins ?? 0) + finalEarnedCoins; // 여기서 coins 값을 업데이트합니다.
                   userProvider?.totaldistance = (userProvider?.totaldistance ?? 0) + newTotalDistance;
                 });
 

@@ -60,7 +60,23 @@ class _ShopState extends State<Shop> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+        body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+      // 좌우 스와이프 시 화면 전환
+      if (details.primaryVelocity! < 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MapScreen()),
+        );
+      }
+      else if (details.primaryVelocity! > 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Home()),
+        );
+      }
+    },
+      child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 59, 18, 163),
@@ -80,6 +96,7 @@ class _ShopState extends State<Shop> {
           ),
         ),
       ),
+        ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
       floatingActionButton: _buildWalkingButton(context), // 산책 버튼 추가
       floatingActionButtonLocation: FloatingActionButtonLocation
