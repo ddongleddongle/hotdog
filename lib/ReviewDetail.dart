@@ -20,6 +20,7 @@ class ReviewDetail extends StatefulWidget {
 class _ReviewDetailState extends State<ReviewDetail> {
   List<dynamic> reviews = [];
   bool isLoading = true;
+  Map<String, dynamic> location = {}; // location 정보를 저장할 변수
 
   // 새 리뷰 입력을 위한 텍스트 필드와 별점 변수
   TextEditingController reviewController = TextEditingController();
@@ -31,17 +32,37 @@ class _ReviewDetailState extends State<ReviewDetail> {
     fetchReviewDetail(widget.locationId); // locationId를 전달하여 리뷰를 가져옵니다.
   }
 
-  // 리뷰 상세 데이터를 서버에서 가져오는 함수
   Future<void> fetchReviewDetail(int locationId) async {
     final url = 'http://116.124.191.174:15017/getReviews?location_id=$locationId';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      setState(() {
-        List<dynamic> data = json.decode(response.body); // 여러 리뷰가 들어있는 리스트
-        reviews = data; // 여러 리뷰 리스트 저장
-        isLoading = false;
-      });
+      try {
+        Map<String, dynamic> data = json.decode(response.body); // 서버 응답은 Map 형태
+        print(data); // 응답 데이터를 출력하여 확인합니다
+
+        // 서버 응답에서 'reviews'와 'location' 데이터를 올바르게 추출합니다
+        if (data.containsKey('reviews') && data['reviews'] is List) {
+          reviews = List<dynamic>.from(data['reviews']); // reviews 배열만 추출
+        } else {
+          print('reviews 데이터를 찾을 수 없습니다');
+        }
+
+        if (data.containsKey('location') && data['location'] is List) {
+          location = data['location'].first; // location은 배열 형태이므로 첫 번째 항목을 가져옵니다
+        } else {
+          print('location 데이터를 찾을 수 없습니다');
+        }
+
+        setState(() {
+          isLoading = false;
+        });
+      } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        print('서버 데이터 처리 중 오류 발생: $e');
+      }
     } else {
       setState(() {
         isLoading = false;
@@ -49,6 +70,8 @@ class _ReviewDetailState extends State<ReviewDetail> {
       print('상세 정보 가져오기 실패');
     }
   }
+
+
 
   Future<void> submitReview() async {
     if (reviewController.text.isEmpty) {
@@ -110,17 +133,26 @@ class _ReviewDetailState extends State<ReviewDetail> {
           ? Center(child: CircularProgressIndicator()) // 로딩 중 표시
           : Column(
         children: [
+          // 장소 정보 표시
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('장소 이름: ${location['name'] ?? '없음'}'),
+                Text('설명: ${location['description'] ?? '없음'}'),
+              ],
+            ),
+          ),
           // 리뷰 목록
           Expanded(
             child: reviews.isEmpty
                 ? Center(child: Text("리뷰가 존재하지 않습니다"))
                 : ListView.builder(
-              itemCount: reviews.length, // 여러 리뷰 수
+              itemCount: reviews.length,
               itemBuilder: (context, index) {
-                var review = reviews[index]; // 각 리뷰
+                var review = reviews[index];
                 double rating = 0.0;
-
-                // review['review']가 문자열일 경우 이를 double로 변환
                 if (review['review'] is String) {
                   rating = double.tryParse(review['review']) ?? 0.0;
                 } else if (review['review'] is num) {
@@ -136,13 +168,10 @@ class _ReviewDetailState extends State<ReviewDetail> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // flutter_rating_bar 위젯을 사용하여 별점 표시
                           RatingBarIndicator(
                             rating: rating,
-                            // 정확한 rating 값을 전달
                             itemCount: 5,
                             itemSize: 30,
-                            // 아이템 크기 설정
                             direction: Axis.horizontal,
                             itemBuilder: (context, index) =>
                                 Icon(
@@ -210,102 +239,6 @@ class _ReviewDetailState extends State<ReviewDetail> {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
-      // 하단 네비게이션 바 추가
-      floatingActionButton: _buildWalkingButton(context),
-      // 산책 버튼 추가
-      floatingActionButtonLocation: FloatingActionButtonLocation
-          .centerDocked, // 중앙에 배치
     );
   }
 }
-
-  BottomNavigationBar _buildBottomNavigationBar(context) {
-  return BottomNavigationBar(
-    currentIndex: 3,
-    items: [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.home),
-        label: '홈',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.shopping_cart),
-        label: '쇼핑',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(null),
-        label: '',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.comment),
-        label: '커뮤니티',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.person),
-        label: '내정보',
-      ),
-    ],
-    backgroundColor: Color(0xFFAAD5D1),
-    selectedItemColor: Colors.white,
-    unselectedItemColor: Colors.black54,
-    type: BottomNavigationBarType.fixed,
-    iconSize: 30,
-    selectedFontSize: 16,
-    unselectedFontSize: 14,
-    onTap: (index) {
-      switch (index) {
-        case 0:
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Home()));
-          break;
-        case 1:
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Shop()));
-          break;
-        case 3:
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Community(),
-              ));
-          break;
-        case 4:
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MyInfo()));
-          break;
-      }
-    },
-  );
-}
-
-Widget _buildWalkingButton(BuildContext context) {
-  return Container(
-    width: 90,
-    height: 90,
-    margin: EdgeInsets.only(top: 30),
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: Colors.white,
-      border: Border.all(
-        color: Color(0xFFAAD5D1),
-        width: 3,
-      ),
-    ),
-    child: FloatingActionButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MapScreen()),
-        );
-      },
-      backgroundColor: Colors.transparent,
-      child: Icon(
-        Icons.pets,
-        size: 65,
-        color: Color(0xFFAAD5D1),
-      ),
-      elevation: 0,
-    ),
-  );
-}
-
