@@ -23,8 +23,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   bool isLoggedIn = true;
-  int currentSteps = 1000; // 초기 걸음 수
-  int stepGoal = 2660; // 목표 걸음 수
+  int currentSteps = 1000; // Initial step count
+  int stepGoal = 2660; // Step goal
   double? lat;
   double? lng;
   late SharedPreferences prefs;
@@ -33,17 +33,11 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    _initPedometer(); // pedometer 초기화
+    _initPedometer(); // Initialize pedometer
     _requestLocationPermission();
     _loadStepData();
-    //_checkPermissions();  // SharedPreferences에서 데이터 로드
   }
 
-  _checkPermissions() async {
-    PermissionStatus status = await Permission.activityRecognition.request();
-  }
-
-  //권한요청
   _requestLocationPermission() async {
     var status = await Permission.location.status;
     if (!status.isGranted) {
@@ -54,15 +48,11 @@ class _HomeState extends State<Home> {
   Future<void> _updatePosition() async {
     try {
       Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-
-      // 위치 정보를 업데이트하기 전에 setState를 호출
       setState(() {
         lat = position.latitude;
         lng = position.longitude;
-        print('Latitude: $lat, Longitude: $lng'); // 문자열 보간을 사용하여 출력
       });
 
-      // UI 업데이트 후 비동기 작업 수행
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       await userProvider.updatePosition(lat, lng);
 
@@ -74,9 +64,9 @@ class _HomeState extends State<Home> {
   _initPedometer() async {
     Pedometer.stepCountStream.listen((stepCount) {
       setState(() {
-        currentSteps = stepCount.steps; // StepCount 객체에서 실제 걸음 수 가져오기
+        currentSteps = stepCount.steps;
       });
-      _saveStepData(); // SharedPreferences에 저장
+      _saveStepData();
     }, onError: (error) {
       setState(() {
         _status = 'Error: $error';
@@ -93,20 +83,12 @@ class _HomeState extends State<Home> {
       currentSteps = 0;
       prefs.setString('lastDate', today);
     } else {
-      //_resetSteps();
       currentSteps = prefs.getInt('currentSteps') ?? 0;
     }
   }
 
   _saveStepData() async {
     await prefs.setInt('currentSteps', currentSteps);
-  }
-
-  _resetSteps() async {
-    await prefs.setInt('currentSteps', 0);
-    setState(() {
-      currentSteps = 1000; // UI에서 값도 초기화
-    });
   }
 
   String _formatBirthDate(String? birthDate) {
@@ -138,80 +120,102 @@ class _HomeState extends State<Home> {
     radius = radius > heightLimit ? heightLimit : radius;
 
     return Scaffold(
-        appBar: _buildAppBar(context),
-        body: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            // 좌우 스와이프 시 화면 전환
-            if (details.primaryVelocity! < 0) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Shop()),
-              );
-            }
-          },
-          child: Container(
-            width: double.infinity, // 화면 너비에 맞추기
-            height: double.infinity, // 화면 높이에 맞추기
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/back.jpg'), // 배경 이미지 경로
-                fit: BoxFit.cover, // 이미지를 화면 크기에 맞게 조정 (확대/축소)
+      appBar: _buildAppBar(context),
+      body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity! < 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Shop()),
+            );
+          }
+        },
+        child: Stack(
+          children: [
+            // Background image
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/back.jpg',
+                fit: BoxFit.cover, // Fill the screen with the image
               ),
             ),
-            //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-            //color: Colors.white,
-            child: Column(
-              children: [
-                _buildProfileSection(user),
-                Flexible(
-                  flex: 2,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(24, 150, 24, 24),
-                      child: SingleChildScrollView(
-                        child: CircularPercentIndicator(
-                          circularStrokeCap:
-                              CircularStrokeCap.round, // 원 모양의 끝 처리
-                          percent: progress,
-                          radius: radius,
-                          lineWidth: 25,
-                          animation: true,
-                          animateFromLastPercent: true,
-                          progressColor: Colors.black,
-                          backgroundColor: Color(0xFFF1F4F8),
-                          center: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '${_convertStepsToKm(currentSteps).toStringAsFixed(2)} km',
-                                style: TextStyle(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold,
-                                ),
+            // Overlay (semi-transparent)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3), // Overlay with transparency
+              ),
+            ),
+            // White sliding panel at the bottom
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: double.infinity,
+                height: screenHeight * 0.55, // The slide panel takes up 75% of the screen height
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Profile Section
+                      _buildProfileSection(user),
+                      SizedBox(height: 20),
+                      // Circular progress for steps
+                      CircularPercentIndicator(
+                        circularStrokeCap: CircularStrokeCap.round,
+                        percent: progress,
+                        radius: radius,
+                        lineWidth: 25,
+                        animation: true,
+                        animateFromLastPercent: true,
+                        progressColor: Colors.black,
+                        backgroundColor: Color(0xFFF1F4F8),
+                        center: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${_convertStepsToKm(currentSteps).toStringAsFixed(2)} km',
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
                               ),
-                              Text(
-                                '목표: ${(stepGoal * 0.75 / 1000).toStringAsFixed(2)} km',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.grey,
-                                ),
+                            ),
+                            Text(
+                              '목표: ${(stepGoal * 0.75 / 1000).toStringAsFixed(2)} km',
+                              style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.grey,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-        bottomNavigationBar: Container(
-          child: _buildBottomNavigationBar(context),
-        ));
+      ),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
+    );
   }
+
 
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
@@ -228,46 +232,27 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // 프로필 섹션 (로그인 상태에 따라 다르게 표시)
+  // Profile Section inside white slide bar
   Widget _buildProfileSection(UserProvider user) {
     return Container(
-      height: 150,
-      margin: EdgeInsets.fromLTRB(20, 50, 10, 0), // 프로필 영역 상하 마진 줄임
-      padding: EdgeInsets.all(10), // 패딩 줄임
-      decoration: BoxDecoration(
-        color: Colors.white, // 배경 색상
-        borderRadius: BorderRadius.circular(10), // 모서리 둥글게
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1), // 그림자 색상
-            spreadRadius: 2, // 그림자 확산 정도
-            blurRadius: 5, // 흐림 정도
-            offset: Offset(0, 3), // 그림자 위치
-          ),
-        ],
-      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(width: 25),
           Container(
-            width: 110, // 이미지 너비 줄이기
-            height: 110, // 이미지 높이 줄이기
+            width: 80,
+            height: 80,
             child: Image.asset('assets/images/pet.png', fit: BoxFit.cover),
           ),
-          SizedBox(width: 60), // 이미지와 텍스트 간 간격 조정
-          // 텍스트 영역
+          SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 isLoggedIn
                     ? _buildProfileText('이름: ${user.petName}')
                     : _buildProfileText('로그인 하세요'),
                 isLoggedIn
-                    ? _buildProfileText(
-                        '생일: ${_formatBirthDate(user.petBirthDay)}')
+                    ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
                     : SizedBox(),
                 isLoggedIn
                     ? _buildProfileText('보유 포인트: ${user.coins}')
@@ -285,13 +270,13 @@ class _HomeState extends State<Home> {
 
   Widget _buildProfileText(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2), // 텍스트 간 간격 좁힘
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Text(
         text,
-        textAlign: TextAlign.center,
+        textAlign: TextAlign.start,
         style: TextStyle(
           color: Color(0xFF62807D),
-          fontSize: 16, // 폰트 크기 줄이기
+          fontSize: 16,
           fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
         ),
@@ -299,38 +284,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Widget _buildButton(String label, VoidCallback onPressed) {
-  //   return Container(
-  //     decoration: ShapeDecoration(
-  //       color: Color(0xFFAAD5D1),
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(10),
-  //       ),
-  //     ),
-  //     child: ElevatedButton(
-  //       style: ElevatedButton.styleFrom(
-  //         backgroundColor: Colors.transparent,
-  //         shadowColor: Colors.transparent,
-  //         padding: EdgeInsets.zero,
-  //       ),
-  //       onPressed: onPressed,
-  //       child: Center(
-  //         child: Text(
-  //           label,
-  //           style: TextStyle(
-  //             color: Colors.white,
-  //             fontSize: 25,
-  //             fontFamily: 'Inter',
-  //             fontWeight: FontWeight.w700,
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   BottomNavigationBar _buildBottomNavigationBar(context) {
-    final user = Provider.of<UserProvider>(context);
     return BottomNavigationBar(
       items: [
         BottomNavigationBarItem(
@@ -360,24 +314,19 @@ class _HomeState extends State<Home> {
       onTap: (index) {
         switch (index) {
           case 0:
-            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
-            print('산책 선택됨');
             Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => MapScreen(),
-                ));
+                MaterialPageRoute(builder: (context) => MapScreen()));
             break;
           case 3:
-            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
@@ -386,3 +335,5 @@ class _HomeState extends State<Home> {
     );
   }
 }
+
+

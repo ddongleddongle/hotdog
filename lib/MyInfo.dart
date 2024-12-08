@@ -17,8 +17,7 @@ class MyInfo extends StatefulWidget {
 }
 
 class _MyInfoState extends State<MyInfo> {
-  final TextEditingController _passwordController =
-      TextEditingController(); // 비밀번호 입력 컨트롤러
+  final TextEditingController _passwordController = TextEditingController(); // 비밀번호 입력 컨트롤러
   bool _isPasswordCorrect = true; // 비밀번호 확인 여부
 
   // 생일 문자열을 DateTime으로 변환하고, 원하는 형식으로 포맷
@@ -32,85 +31,95 @@ class _MyInfoState extends State<MyInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final user =
-        Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body:
-    GestureDetector(
-    onHorizontalDragEnd: (details) {
-    // 좌우 스와이프 시 화면 전환
-    if (details.primaryVelocity! < 0) {
-    Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => Walking()),
-    );
-    }
-    },
-    child:Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            _buildProfileSection(user), // user를 전달하여 프로필 섹션에 데이터 사용
-            _buildQnAButton(context),
-            _buildEditInfoButton(context),
-            _buildLogoutButton(context), // 로그아웃 버튼
-          ],
-        ),
-      ),
-    ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
-    );
-  }
+    final user = Provider.of<UserProvider>(context); // Provider를 사용하여 사용자 정보 가져오기
+    double screenHeight = MediaQuery.of(context).size.height;
 
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Color(0xFFAAD5D1),
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.black54),
-        onPressed: () {
-          Navigator.pop(context); // 뒤로가기 버튼
-        },
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background image with scaling adjustment
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/pet.png', // 배경 이미지
+              fit: BoxFit.cover, // 이미지가 화면을 채우도록 설정
+              alignment: Alignment.center, // 이미지가 화면 중앙에 위치하도록 설정
+            ),
+          ),
+          // Overlay (semi-transparent)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.7), // 반투명 오버레이
+            ),
+          ),
+          // White sliding panel at the bottom
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: screenHeight * 0.65, // 슬라이드 패널 높이를 65%로 설정
+              margin: EdgeInsets.only(top: 20), // 상단에 20픽셀 여백
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+                border: Border.all(
+                  color: Color(0xFFAAD5D1), // 경계선 색상
+                  width: 4, // 경계선 두께
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile section
+                    _buildProfileSection(user),
+                    // Additional buttons and info sections
+                    _buildQnAButton(context),
+                    _buildEditInfoButton(context),
+                    _buildLogoutButton(context),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      title: Text("내 정보", style: TextStyle(color: Colors.black)),
+      bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
 
   Widget _buildProfileSection(UserProvider user) {
     return Container(
-      margin: EdgeInsets.fromLTRB(0, 30, 0, 20),
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
       padding: EdgeInsets.all(20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,  // 왼쪽 정렬 설정
         children: [
-          Expanded(
-            flex: 1,
-            child: Image.asset('assets/images/pet.png', fit: BoxFit.contain),
-          ),
-          Expanded(
-            flex: 2,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                user.petName != null
-                    ? _buildProfileText('이름: ${user.petName}')
-                    : _buildProfileText('로그인 하세요'),
-                user.petBirthDay != null
-                    ? _buildProfileText(
-                        '생일: ${_formatBirthDate(user.petBirthDay)}')
-                    : SizedBox(),
-                user.coins != 0
-                    ? _buildProfileText('보유 포인트: ${user.coins}')
-                    : SizedBox(),
-              ],
-            ),
+          // 이름을 크게 하고 bold로 설정
+          user.petName != null
+              ? _buildProfileText('${user.petName}', isBold: true, fontSize: 30)
+              : _buildProfileText('로그인 하세요'),
+          user.petBirthDay != null
+              ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
+              : SizedBox(),
+          user.coins != 0
+              ? _buildProfileText('보유 포인트: ${user.coins}')
+              : SizedBox(),
+
+          // 경계선 추가
+          Divider(
+            color: Color(0xFFAAD5D1),
+            thickness: 2,
+            height: 30,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProfileText(String text) {
+  Widget _buildProfileText(String text, {bool isBold = false, double fontSize = 20}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Text(
@@ -118,10 +127,24 @@ class _MyInfoState extends State<MyInfo> {
         textAlign: TextAlign.left,
         style: TextStyle(
           color: Color(0xFF62807D),
-          fontSize: 20,
+          fontSize: fontSize,  // 폰트 크기 설정
           fontFamily: 'Inter',
-          fontWeight: FontWeight.w700,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,  // bold 설정
         ),
+      ),
+    );
+  }
+
+  Widget _buildEditInfoButton(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20),
+      margin: EdgeInsets.only(bottom: 10),
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: _buildButton('내 정보 수정', () {
+          _showPasswordDialog(context); // 비밀번호 확인 다이얼로그 표시
+        }),
       ),
     );
   }
@@ -146,20 +169,6 @@ class _MyInfoState extends State<MyInfo> {
     );
   }
 
-  Widget _buildEditInfoButton(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      margin: EdgeInsets.only(bottom: 10),
-      child: SizedBox(
-        width: double.infinity,
-        height: 50,
-        child: _buildButton('내 정보 수정', () {
-          _showPasswordDialog(context); // 비밀번호 확인 다이얼로그 표시
-        }),
-      ),
-    );
-  }
-
   // 비밀번호 확인 다이얼로그
   void _showPasswordDialog(BuildContext context) {
     showDialog(
@@ -168,7 +177,6 @@ class _MyInfoState extends State<MyInfo> {
         return AlertDialog(
           title: Text("비밀번호 확인"),
           content: SingleChildScrollView(
-            // 키보드가 올라왔을 때 스크롤이 가능하도록 함
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -183,7 +191,6 @@ class _MyInfoState extends State<MyInfo> {
           actions: [
             TextButton(
               onPressed: () {
-                // 비밀번호 확인
                 final enteredPassword = _passwordController.text;
                 final correctPassword =
                     Provider.of<UserProvider>(context, listen: false).password;
@@ -225,15 +232,10 @@ class _MyInfoState extends State<MyInfo> {
         width: double.infinity,
         height: 50,
         child: _buildButton('로그아웃', () {
-          // 로그아웃 처리
           Provider.of<UserProvider>(context, listen: false).logout();
-
-          // 로그아웃 메시지 표시
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('로그아웃 됨')),
           );
-
-          // 로그인 화면으로 돌아가기
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => Login()),
@@ -273,8 +275,7 @@ class _MyInfoState extends State<MyInfo> {
     );
   }
 
-  BottomNavigationBar _buildBottomNavigationBar(context) {
-    final user = Provider.of<UserProvider>(context);
+  BottomNavigationBar _buildBottomNavigationBar(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: 3,
       items: [
@@ -305,17 +306,14 @@ class _MyInfoState extends State<MyInfo> {
       onTap: (index) {
         switch (index) {
           case 0:
-            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
-            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
-            print('산책 선택됨');
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -323,7 +321,6 @@ class _MyInfoState extends State<MyInfo> {
                 ));
             break;
           case 3:
-            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
