@@ -15,6 +15,7 @@ class UserProvider with ChangeNotifier {
   double? _lng;
   int? _partyid;
   bool? _partyRequest;
+  String? _imagePath;
 
   // Getters
   String? get email => _email;
@@ -27,6 +28,7 @@ class UserProvider with ChangeNotifier {
   double? get lng => _lng;
   int? get partyid => _partyid;
   bool? get party_request => _partyRequest;
+  String? get imagePath => _imagePath;
 
   //late MarkerInfo markerInfo;
   late List<LatLng> userPositions = []; // LatLng 객체를 저장할 리스트
@@ -75,8 +77,7 @@ class UserProvider with ChangeNotifier {
 
   // 로그아웃 처리
   Future<void> logout() async {
-    final url =
-        'http://116.124.191.174:15017/resetposition'; // 여기에 API 엔드포인트를 입력하세요
+    final url = 'http://116.124.191.174:15017/resetposition'; // 여기에 API 엔드포인트를 입력하세요
 
     try {
       final response = await http.post(
@@ -150,7 +151,8 @@ class UserProvider with ChangeNotifier {
       throw error; // 에러 처리
     }
   }
-
+  
+  //리뷰 가져오기
   Future<void> getReview(String title) async {
     userReviews.clear();
     final url = 'http://116.124.191.174:15017/review'; // API 엔드포인트
@@ -200,6 +202,76 @@ class UserProvider with ChangeNotifier {
     _lat = lat;
     _lng = lng;
     notifyListeners(); // 상태 변경 통지
+  }
+
+  // 리뷰 조회수 증가
+  Future<void> incrementlocation(String name) async {
+    final url = 'http://116.124.191.174:15017/incrementlocation'; // API 엔드포인트
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'name': name,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // 서버 응답 처리
+        notifyListeners(); // 상태 변경 통지
+        print('${name} 조회수 증가');
+      } else {
+        // 상태 코드에 따라 에러 메시지 다르게 처리
+        print('Error: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to update position data: ${response.body}');
+      }
+    } catch (error) {
+      print('Increment location error: $error'); // 구체적인 에러 메시지 출력
+      throw error; // 에러 처리
+    }
+  }
+
+// 리뷰 색 가져오기
+  Future<int> locationColor(String name) async {
+    final url = 'http://116.124.191.174:15017/locationcolor'; // API 엔드포인트
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'name': name}),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
+        final List<dynamic> data = jsonData['results']; // 'results' 키에서 데이터 추출
+        //print("리뷰 color 가져옴");
+
+        if (data.isNotEmpty) {
+          int? view = data[0]['view'];
+
+          if (view != null) {
+            return view;
+          } else {
+            print('view is null for this review: $view'); // null인 경우 로그 출력
+          }
+        } else {
+          print('No results found for the given name: $name');
+        }
+      } else {
+        print('Error: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to load location color: ${response.body}');
+      }
+    } catch (error) {
+      print('Error loading location color: $error');
+    }
+
+    print('아무 색도 받아오지 못함');
+    return -1; // 오류 발생 시 기본값
   }
 
   //시설 마커 리스트

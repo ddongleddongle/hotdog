@@ -19,7 +19,7 @@ class MapScreen extends StatefulWidget {
 class ReviewInfo {
   late String content;
   late int review;
-  late int id;
+  late int id;          //DB에서 reviews 의 id
 
   ReviewInfo({
     required this.content,
@@ -442,15 +442,32 @@ class _MapScreenState extends State<MapScreen> {
       // 구조물 마커 (파란색)
       for (var markerInfo in _markerInfos) {
         bool _party = await _checkProximityToMarkers(markerInfo);
+        int? colorValue = await userProvider?.locationColor(markerInfo.title);
+
+        // 색상을 적절한 hue 값으로 변환
+        double hue;
+        if (colorValue != null) {
+          if (colorValue <= 10) {
+            hue = BitmapDescriptor.hueBlue;
+          } else if (colorValue > 10 && colorValue <= 20) {
+            hue = BitmapDescriptor.hueGreen;
+          } else {
+            hue = BitmapDescriptor.hueAzure;
+          }
+        } else {
+          hue = BitmapDescriptor.hueRed; // 기본 색상 설정
+        }
+
         _markers.add(Marker(
           markerId: MarkerId(markerInfo.title),
           position: markerInfo.position,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          icon: BitmapDescriptor.defaultMarkerWithHue(hue),
           onTap: () {
+            userProvider?.incrementlocation(markerInfo.title);  //조회수 증가
             _onMarkerTapped(markerInfo, _party, true);
           },
         ));
-        //print('public marker: ${markerInfo.title} at ${markerInfo.position}'); // 마커 추가 로그
+        // print('public marker: ${markerInfo.title} at ${markerInfo.position}'); // 마커 추가 로그
       }
 
       // 사용자 마커 (visible 동적 설정)
