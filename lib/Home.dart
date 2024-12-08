@@ -109,163 +109,166 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context);
 
-    double progress = currentSteps / stepGoal;
+    double progress = 1000 / stepGoal;
     progress = progress > 1.0 ? 1.0 : progress;
-
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-
-    double radius = screenWidth * 0.28;
-    double heightLimit = screenHeight * 0.3;
-    radius = radius > heightLimit ? heightLimit : radius;
 
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! < 0) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Shop()),
-            );
-          }
-        },
-        child: Stack(
-          children: [
-            // Background image
-            Positioned.fill(
-              child: Image.asset(
-                'assets/images/back.jpg',
-                fit: BoxFit.cover, // Fill the screen with the image
-              ),
-            ),
-            // Overlay (semi-transparent)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.3), // Overlay with transparency
-              ),
-            ),
-            // White sliding panel at the bottom
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                height: screenHeight * 0.55, // The slide panel takes up 75% of the screen height
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                  border: Border.all(
-                    color: Color(0xFFAAD5D1), // Border color
-                    width: 4, // Border width
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = constraints.maxWidth;
+          double screenHeight = constraints.maxHeight;
+
+          double radius = screenWidth * 0.30;
+          double heightLimit = screenHeight * 0.3;
+          radius = radius > heightLimit ? heightLimit : radius;
+
+          return GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! < 0) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Shop()),
+                );
+              }
+            },
+            child: Stack(
+              children: [
+                // Background image
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/back.jpg',
+                    fit: BoxFit.cover, // Fill the screen with the image
                   ),
                 ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 20), // Added space to make room for the image above the panel
-                      Row(
+                // Overlay (semi-transparent)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.3), // Overlay with transparency
+                  ),
+                ),
+                // White sliding panel at the bottom
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: double.infinity,
+                    height: screenHeight * 0.75, // The slide panel takes up 55% of the screen height
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Color(0xFFAAD5D1), // Border color
+                        width: 4, // Border width
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SizedBox(width: 25),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          SizedBox(height: 20), // Added space to make room for the image above the panel
+                          Row(
+                            children: [
+                              SizedBox(width: 5),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    isLoggedIn
+                                        ? _buildProfileText('이름: ${user.petName}')
+                                        : _buildProfileText('로그인 하세요'),
+                                    isLoggedIn
+                                        ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
+                                        : SizedBox(),
+                                    isLoggedIn
+                                        ? _buildProfileText('보유 포인트: ${user.coins}')
+                                        : SizedBox(),
+                                    !isLoggedIn
+                                        ? _buildProfileText('로그인을 하여 정보를 확인하세요')
+                                        : SizedBox(),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Container(
+                            height: 2, // 경계선의 두께
+                            color: Color(0xFFAAD5D1), // 경계선 색상
+                          ),
+                          SizedBox(height: 25),
+                          // Circular progress for steps
+                          CircularPercentIndicator(
+                            circularStrokeCap: CircularStrokeCap.round,
+                            percent: progress,
+                            radius: radius,
+                            lineWidth: 25,
+                            animation: true,
+                            animateFromLastPercent: true,
+                            progressColor: Color(0xFFAAD5D1),
+                            backgroundColor: Color(0xFFF1F4F8),
+                            center: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                isLoggedIn
-                                    ? _buildProfileText('이름: ${user.petName}')
-                                    : _buildProfileText('로그인 하세요'),
-                                isLoggedIn
-                                    ? _buildProfileText('생일: ${_formatBirthDate(user.petBirthDay)}')
-                                    : SizedBox(),
-                                isLoggedIn
-                                    ? _buildProfileText('보유 포인트: ${user.coins}')
-                                    : SizedBox(),
-                                !isLoggedIn
-                                    ? _buildProfileText('로그인을 하여 정보를 확인하세요')
-                                    : SizedBox(),
+                                Text(
+                                  '${_convertStepsToKm(currentSteps).toStringAsFixed(2)} km',
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '목표: ${(stepGoal * 0.75 / 1000).toStringAsFixed(2)} km',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 8),
-                      Container(
-                        height: 2, // 경계선의 두께
-                        color: Color(0xFFAAD5D1), // 경계선 색상
-                      ),
-                      SizedBox(height: 20),
-                      // Circular progress for steps
-                      CircularPercentIndicator(
-                        circularStrokeCap: CircularStrokeCap.round,
-                        percent: progress,
-                        radius: radius,
-                        lineWidth: 25,
-                        animation: true,
-                        animateFromLastPercent: true,
-                        progressColor: Color(0xFFAAD5D1),
-                        backgroundColor: Color(0xFFF1F4F8),
-                        center: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${_convertStepsToKm(currentSteps).toStringAsFixed(2)} km',
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '목표: ${(stepGoal * 0.75 / 1000).toStringAsFixed(2)} km',
-                              style: TextStyle(
-                                fontSize: 22,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            // Profile image positioned at the top boundary of the slide panel with border
-            Positioned(
-              top: screenHeight * 0.255 - 40, // This ensures the image is just above the slide panel
-              left: (screenWidth - 120) / 2, // Center horizontally
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle, // Circle shape
-                  border: Border.all(
-                    color: Color(0xFFAAD5D1), // Border color around the image
-                    width: 5, // Border width
+                // Profile image positioned at the top boundary of the slide panel with border
+                Positioned(
+                  top: screenHeight * 0.15, // This ensures the image is just above the slide panel
+                  left: (screenWidth - 120) / 2, // Center horizontally
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle, // Circle shape
+                      border: Border.all(
+                        color: Color(0xFFAAD5D1), // Border color around the image
+                        width: 5, // Border width
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 60, // Size of the circle (profile image)
+                      backgroundImage: AssetImage('assets/profile/${user.petName}.jpg'),
+                    ),
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: 60, // Size of the circle (profile image)
-                  backgroundImage: AssetImage('assets/profile/${user.petName}.jpg'),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
-
 
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
@@ -281,7 +284,6 @@ class _HomeState extends State<Home> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
     );
   }
-
 
   Widget _buildProfileText(String text) {
     return Padding(
@@ -350,5 +352,3 @@ class _HomeState extends State<Home> {
     );
   }
 }
-
-

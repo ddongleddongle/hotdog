@@ -92,8 +92,7 @@ class _MyInfoState extends State<MyInfo> {
 
   Widget _buildProfileSection(UserProvider user) {
     return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,  // 왼쪽 정렬 설정
         children: [
