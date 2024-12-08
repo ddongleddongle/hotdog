@@ -831,20 +831,60 @@ class _MapScreenState extends State<MapScreen> {
                         child: FloatingActionButton(
                           backgroundColor: Color(0xFFAAD5D1),
                           child: Text(
-                            '파티 시작',
-                            style: TextStyle(color: Colors.white),
+                          '파티 시작',
+                          style: TextStyle(color: Colors.white),
                           ),
                           onPressed: () async {
                             Navigator.of(context).pop();
                             if (mounted) { // mounted 체크
                               setState(() {
-                                message('파티가 시작되었습니다. 추가 포인트 x${pointRate!*10}%');
-                                _inParty = false;
-                                _isRequest = false;
-                                _canWalking = false;
-                                _isParty = true;
-                                pointRate = _userParticipant.length;
+                              _inParty = false;
+                              _isRequest = false;
+                              _canWalking = false;
+                              _isParty = true;
+                              pointRate = _userParticipant.length;
                               });
+
+                              // 팝업창 띄우기
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
+                                      side: BorderSide(color: Color(0xFFAAD5D1), width: 4.0),
+                                    ),
+                                    title: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '알림',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        Divider(
+                                          color: Color(0xFFAAD5D1),
+                                          thickness: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    content: Text('파티가 시작되었습니다. 추가 포인트 x${pointRate! * 10}%'),
+                                    actions: <Widget>[
+                                      ElevatedButton(
+                                        style: ButtonStyle(
+                                          backgroundColor: MaterialStateProperty.all(Color(0xFFAAD5D1)),
+                                          foregroundColor: MaterialStateProperty.all(Colors.white),
+                                          shadowColor: MaterialStateProperty.all(Colors.black),
+                                          elevation: MaterialStateProperty.all(5), // 그림자 높이 설정
+                                        ),
+                                        child: Text('확인'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             }
                           },
                         ),
@@ -903,12 +943,12 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                 // 현위치 버튼
                 Align(
-                  alignment: Alignment(0.99, 0.73),
+                  alignment: Alignment(0.98, 0.63),
                   child: ClipOval(
                     child: Material(
-                      color: Colors.orange.shade100,
+                      color: Color(0xFFAAD5D1),
                       child: InkWell(
-                        splashColor: Colors.orange,
+                        splashColor: Color(0xFFAAD5D1),
                         child: SizedBox(
                           width: 56,
                           height: 56,
