@@ -10,6 +10,8 @@ import 'Shop/Shop.dart';
 import 'User_Provider.dart';
 import 'Walking.dart';
 import 'test.dart';
+import 'Mapscreen.dart';
+import 'Community.dart';
 
 class MyInfo extends StatefulWidget {
   @override
@@ -87,6 +89,9 @@ class _MyInfoState extends State<MyInfo> {
         ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
+      floatingActionButton: _buildWalkingButton(context), // 산책 버튼 추가
+      floatingActionButtonLocation: FloatingActionButtonLocation
+          .centerDocked, // 중앙에 배치
     );
   }
 
@@ -274,9 +279,10 @@ class _MyInfoState extends State<MyInfo> {
     );
   }
 
-  BottomNavigationBar _buildBottomNavigationBar(BuildContext context) {
+  BottomNavigationBar _buildBottomNavigationBar(context) {
+    final user = Provider.of<UserProvider>(context);
     return BottomNavigationBar(
-      currentIndex: 3,
+      currentIndex: 4,
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
@@ -287,8 +293,12 @@ class _MyInfoState extends State<MyInfo> {
           label: '쇼핑',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.pets),
-          label: '산책',
+          icon: Icon(null),
+          label: '',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.comment),
+          label: '커뮤니티',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
@@ -305,26 +315,67 @@ class _MyInfoState extends State<MyInfo> {
       onTap: (index) {
         switch (index) {
           case 0:
+            print('홈 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Home()));
             break;
           case 1:
+            print('쇼핑 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;
           case 2:
+            break;
+          case 3:
+            print('커뮤니티 선택됨');
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Walking(),
+                  builder: (context) => Community(),
                 ));
             break;
-          case 3:
+          case 4:
+            print('내정보 선택됨');
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => MyInfo()));
             break;
         }
       },
+    );
+  }
+
+  Widget _buildWalkingButton(BuildContext context) {
+    return Container(
+      width: 90,
+      // 버튼의 너비
+      height: 90,
+      // 버튼의 높이
+      margin: EdgeInsets.only(top: 30),
+      // 아래쪽 여백 추가
+      decoration: BoxDecoration(
+        shape: BoxShape.circle, // 동그란 모양
+        color: Colors.white, // 버튼 색상
+        border: Border.all(
+          color: Color(0xFFAAD5D1), // 테두리 색상
+          width: 3, // 테두리 두께
+        ),
+      ),
+      child: FloatingActionButton(
+        onPressed: () {
+          // 산책 버튼 클릭 시 처리
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MapScreen()),
+          );
+        },
+        backgroundColor: Colors.transparent, // 투명하게 설정
+        child: Icon(
+          Icons.pets,
+          size: 65, // 아이콘 크기
+          color: Color(0xFFAAD5D1), // 아이콘 색상
+        ),
+        elevation: 0, // 그림자 제거
+      ),
     );
   }
 }
