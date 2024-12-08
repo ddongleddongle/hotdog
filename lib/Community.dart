@@ -25,11 +25,28 @@ class _CommunityState extends State<Community> {
     final user = Provider.of<UserProvider>(
         context); // Provider를 사용하여 사용자 정보 가져오기
     return Scaffold(
-      body: Stack(
+        body: GestureDetector(
+        onHorizontalDragEnd: (details) {
+      // 좌우 스와이프 시 화면 전환
+      if (details.primaryVelocity! < 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyInfo()),
+        );
+      }
+      else if (details.primaryVelocity! > 0) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MapScreen()),
+        );
+      }
+    },
+      child: Stack(
         children: [
           // 다른 UI 요소들...
         ],
       ),
+        ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
       floatingActionButton: _buildWalkingButton(context), // 산책 버튼 추가
       floatingActionButtonLocation: FloatingActionButtonLocation
