@@ -127,23 +127,69 @@ class _ReviewDetailState extends State<ReviewDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Reviews"),
+        backgroundColor: Color(0xFFAAD5D1),
+        title: Text(
+          "Reviews",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator()) // 로딩 중 표시
           : Column(
         children: [
+          // 상단 이미지 (화면 가득 채우기)
+          Container(
+            padding: EdgeInsets.zero,  // 여백을 없애줍니다
+            width: double.infinity,
+            height: MediaQuery.of(context).size.height * 0.25,
+            child: Image.asset(
+              'assets/location/${location['name'] ?? 'default_image'}.jpg',
+              fit: BoxFit.cover, // 이미지 크기에 맞게 잘림
+            ),
+          ),
+
           // 장소 정보 표시
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start, // 기본값이므로 이미 왼쪽 정렬입니다
               children: [
-                Text('장소 이름: ${location['name'] ?? '없음'}'),
-                Text('설명: ${location['description'] ?? '없음'}'),
+                Align(
+                  alignment: Alignment.centerLeft, // 왼쪽 정렬을 강제합니다
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0), // 왼쪽으로 8픽셀 만큼 여백을 추가
+                    child: Text(
+                      '${location['name'] ?? '없음'}',
+                      style: TextStyle(
+                        fontSize: 20, // 폰트 크기 키우기
+                        fontWeight: FontWeight.bold, // 볼드체
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8), // 장소 이름과 설명 사이에 간격 추가
+                Align(
+                  alignment: Alignment.centerLeft, // 왼쪽 정렬을 강제합니다
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0), // 왼쪽으로 8픽셀 만큼 여백을 추가
+                    child: Text(
+                      '${location['description'] ?? '없음'}',
+                      style: TextStyle(
+                        fontSize: 16, // 설명은 기본 크기
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+          Divider(
+            color: Color(0xFFAAD5D1), // 경계선 색상
+            thickness: 2, // 경계선 두께
+          ),
+
           // 리뷰 목록
           Expanded(
             child: reviews.isEmpty
@@ -176,7 +222,7 @@ class _ReviewDetailState extends State<ReviewDetail> {
                             itemBuilder: (context, index) =>
                                 Icon(
                                   Icons.star,
-                                  color: Colors.amber,
+                                  color: Color(0xFFAAD5D1),
                                 ),
                           ),
                           SizedBox(height: 8),
@@ -189,7 +235,10 @@ class _ReviewDetailState extends State<ReviewDetail> {
               },
             ),
           ),
-          Divider(), // 리뷰 작성 구분선
+          Divider(
+            color: Color(0xFFAAD5D1), // 경계선 색상
+            thickness: 2, // 경계선 두께
+          ),// 리뷰 작성 구분선
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -203,7 +252,7 @@ class _ReviewDetailState extends State<ReviewDetail> {
                   itemBuilder: (context, index) =>
                       Icon(
                         Icons.star,
-                        color: Colors.amber,
+                        color: Color(0xFFAAD5D1),
                       ),
                   onRatingUpdate: (rating) {
                     setState(() {
@@ -222,7 +271,6 @@ class _ReviewDetailState extends State<ReviewDetail> {
                   ),
                   maxLines: 3,
                 ),
-                SizedBox(height: 10),
               ],
             ),
           ),
@@ -234,11 +282,17 @@ class _ReviewDetailState extends State<ReviewDetail> {
               child: ElevatedButton(
                 onPressed: submitReview,
                 child: Text("리뷰 작성"),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color(0xFFAAD5D1),     // 텍스트 색상 (글씨 색)
+                ),
               ),
             ),
-          ),
+          )
         ],
       ),
     );
   }
+
+
 }
