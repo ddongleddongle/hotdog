@@ -40,7 +40,7 @@ class _MyInfoState extends State<MyInfo> {
           // Background image with scaling adjustment
           Positioned.fill(
             child: Image.asset(
-              'assets/images/pet.png', // 배경 이미지
+              'assets/profile/${user.petName}.jpg', // 배경 이미지
               fit: BoxFit.cover, // 이미지가 화면을 채우도록 설정
               alignment: Alignment.center, // 이미지가 화면 중앙에 위치하도록 설정
             ),
