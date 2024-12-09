@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'Shop/Shop.dart';
 import 'Walking.dart';
+import 'auth.dart';
 import 'test.dart';
 import 'Community.dart';
 import 'Start.dart';
@@ -348,6 +349,7 @@ class _HomeState extends State<Home> {
             break;
           case 1:
             print('쇼핑 선택됨');
+            auth(context);
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => Shop()));
             break;

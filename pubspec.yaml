@@ -53,8 +53,10 @@ dependencies:
   percent_indicator: ^4.2.3
   image_picker: ^1.1.2
   #tflite: ^1.1.2
+  tflite_flutter: ^0.11.0
   flutter_rating_bar: ^4.0.1
-  image: ^4.3.0
+  image: ^3.1.0
+  path_provider: ^2.1.5
 #  flutterflow_ui:
 
 dev_dependencies:
@@ -79,7 +81,7 @@ flutter:
     - assets/profile/
     - assets/location/
     - assets/locations.json
-    #- assets/siamese_model.tflite
+    - assets/siamese_model.tflite
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
